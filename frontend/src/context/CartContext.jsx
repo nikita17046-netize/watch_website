@@ -20,7 +20,7 @@ export const CartProvider = ({ children }) => {
   const fetchCart = async () => {
     setLoading(true);
     try {
-      const res = await API.get('/cart');
+      const res = await API.get('/cart/all');
       setCart(res.data.cart.items || []);
     } catch (err) {
       console.error("Fetch cart error", err);
@@ -30,11 +30,15 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (productId, quantity = 1) => {
     try {
-      const res = await API.post('/cart/add', { productId, quantity });
+      const res = await API.post('/cart/add', { 
+        item: { productId, quantity } 
+      });
       setCart(res.data.cart.items);
+      toast.success('Added to your collection');
       return res.data;
     } catch (err) {
-      console.error("Add to cart error", err);
+      const errorMsg = err.response?.data?.message || "Unable to update registry";
+      toast.error(errorMsg);
       throw err;
     }
   };

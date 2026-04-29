@@ -49,13 +49,16 @@ function App() {
           />
           <Layout>
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/offer/:id" element={<OfferProducts />} />
-              <Route path="/cart" element={<Cart />} />
+              {/* Public Entrance */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+
+              {/* Protected Main Website */}
+              <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+              <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+              <Route path="/product/:id" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} />
+              <Route path="/offer/:id" element={<ProtectedRoute><OfferProducts /></ProtectedRoute>} />
+              <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
               
               {/* Protected Routes */}
               <Route path="/profile" element={

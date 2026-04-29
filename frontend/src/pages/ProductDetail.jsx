@@ -33,9 +33,8 @@ const ProductDetail = () => {
     setAdding(true);
     try {
       await addToCart(product._id, quantity);
-      toast.success('Acquisition added to bag');
     } catch (err) {
-      toast.error("Unable to update registry");
+      // Error handled by CartContext
     }
     setAdding(false);
   };

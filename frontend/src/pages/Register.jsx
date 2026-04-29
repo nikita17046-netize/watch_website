@@ -24,8 +24,8 @@ const Register = () => {
     setLoading(true);
     try {
       await register(formData);
-      toast.success('Welcome to the LUXE Circle.');
-      navigate('/profile');
+      toast.success('Membership application received. Please sign in.');
+      navigate('/login');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Application Failed');
     }
