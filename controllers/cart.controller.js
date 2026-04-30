@@ -7,12 +7,12 @@ module.exports.AddToCart = async (req, res) => {
     const userId = req.user.id;
     const { item } = req.body;
 
-    const Exist = await cartModel.findOne({ userId });
+    const exist = await cartModel.findOne({ userId });
     
-    if (Exist) {
-      const isProductInCart = Exist.items.some(val => val.productId.equals(item.productId));
-      if (isProductInCart) {
-        return res.status(400).json({ message: "Product is already in your bag" });
+    if (exist) {
+      const isDuplicate = exist.items.some(val => val.productId.toString() === item.productId.toString());
+      if (isDuplicate) {
+        return res.status(400).json({ message: "Product is already in your cart" });
       }
     }
 
@@ -20,8 +20,9 @@ module.exports.AddToCart = async (req, res) => {
 
     return res
       .status(200)
-      .json({ message: "add item to cart successfully", cart });
+      .json({ message: "Item added to cart successfully", cart });
   } catch (error) {
+    console.error("AddToCart Error:", error);
     return res.status(400).json({ message: error.message });
   }
 };
@@ -49,16 +50,42 @@ module.exports.GetCart = async (req, res) => {
 module.exports.RemoveItem = async (req, res) => {
   try {
     const userId = req.user.id;
-    const productId = req.params.id;
+    const { productId, itemId } = req.body;
+    console.log("RemoveItem - User:", userId, "Product:", productId, "Item:", itemId);
 
-    await cartService.RemoveSingleProduct({ userId, productId });
+    const cart = await cartService.RemoveSingleProduct({ userId, productId, itemId });
 
     return res
       .status(200)
-      .json({ message: "Remove Item from Cart Sucessfully " });
+      .json({ message: "Remove Item from Cart Successfully", cart });
+  } catch (error) {
+    console.error("RemoveItem Error:", error);
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+// Update quantity
+module.exports.UpdateQuantity = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { productId, quantity } = req.body;
+
+    const cart = await cartService.UpdateQuantity({ userId, productId, quantity });
+
+    return res
+      .status(200)
+      .json({ message: "Quantity updated successfully", cart });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
 
-
+module.exports.ClearCart = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    await cartService.ClearCart(userId);
+    return res.status(200).json({ message: "Cart cleared successfully" });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};

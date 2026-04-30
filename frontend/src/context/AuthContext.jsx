@@ -4,7 +4,15 @@ import API from '../api/api';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (e) {
+      console.error("Failed to parse user from localStorage", e);
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -14,9 +22,12 @@ export const AuthProvider = ({ children }) => {
         try {
           const res = await API.get('/user/profile');
           setUser(res.data.user);
+          localStorage.setItem('user', JSON.stringify(res.data.user));
         } catch (err) {
           console.error("Auth initialization error", err);
           localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setUser(null);
         }
       }
       setLoading(false);
@@ -27,6 +38,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const res = await API.post('/user/login', { email, password });
     localStorage.setItem('token', res.data.token);
+    localStorage.setItem('user', JSON.stringify(res.data.user));
     setUser(res.data.user);
     return res.data;
   };
@@ -39,6 +51,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
   };
 

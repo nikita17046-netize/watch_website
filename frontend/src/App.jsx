@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
 
 // Components & Layout
 import Layout from './components/Layout';
@@ -16,15 +17,15 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminPanel from './pages/AdminPanel';
 import OfferProducts from './pages/OfferProducts';
+import Wishlist from './pages/Wishlist';
+import Checkout from './pages/Checkout';
+import MyOrders from './pages/MyOrders';
 
 // Protected Route Component
-const ProtectedRoute = ({ children, adminOnly = false }) => {
+const AdminRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  
   if (loading) return null;
-  if (!user) return <Navigate to="/login" />;
-  if (adminOnly && user.role !== 'admin') return <Navigate to="/" />;
-  
+  if (!user || user.role !== 'admin') return <Navigate to="/" />;
   return children;
 };
 
@@ -32,7 +33,8 @@ function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <Router>
+        <WishlistProvider>
+          <Router>
           <Toaster 
             position="bottom-right"
             toastOptions={{
@@ -53,41 +55,33 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
 
-              {/* Protected Main Website */}
-              <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-              <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
-              <Route path="/product/:id" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} />
-              <Route path="/offer/:id" element={<ProtectedRoute><OfferProducts /></ProtectedRoute>} />
-              <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+              {/* Public Main Website */}
+              <Route path="/" element={<Home />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/offer/:id" element={<OfferProducts />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/wishlist" element={<Wishlist />} />
               
-              {/* Protected Routes */}
               <Route path="/profile" element={
-                <ProtectedRoute>
-                  <div className="pt-40 text-center min-h-screen">
-                    <h1 className="text-4xl font-playfair mb-8">My Account</h1>
-                    <p className="text-gray-500 uppercase tracking-widest text-xs">Welcome to your private lounge</p>
-                  </div>
-                </ProtectedRoute>
+                <div className="pt-40 text-center min-h-screen">
+                  <h1 className="text-4xl font-playfair mb-8">My Account</h1>
+                  <p className="text-gray-500 uppercase tracking-widest text-xs">Welcome to your private lounge</p>
+                </div>
               } />
               
-              <Route path="/checkout" element={
-                <ProtectedRoute>
-                  <div className="pt-40 text-center min-h-screen">
-                    <h1 className="text-4xl font-playfair mb-8">Checkout</h1>
-                    <p className="text-gray-500 uppercase tracking-widest text-xs">Finalizing your acquisition</p>
-                  </div>
-                </ProtectedRoute>
-              } />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/my-orders" element={<MyOrders />} />
               
-              {/* Admin Routes */}
               <Route path="/admin" element={
-                <ProtectedRoute adminOnly={true}>
+                <AdminRoute>
                   <AdminPanel />
-                </ProtectedRoute>
+                </AdminRoute>
               } />
             </Routes>
           </Layout>
         </Router>
+        </WishlistProvider>
       </CartProvider>
     </AuthProvider>
   );

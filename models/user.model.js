@@ -26,7 +26,11 @@ let userSchema = mongoose.Schema({
     enum: ["user", "admin", "manager"],
     default: "user",
   },
-});
+  isBlocked: {
+    type: Boolean,
+    default: false
+  }
+}, { timestamps: true });
 
 // jwt token
 userSchema.methods.generateAuthToken = function () {

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import API from '../api/api';
 import { useAuth } from './AuthContext';
+import toast from 'react-hot-toast';
 
 const CartContext = createContext();
 
@@ -21,7 +22,11 @@ export const CartProvider = ({ children }) => {
     setLoading(true);
     try {
       const res = await API.get('/cart/all');
-      setCart(res.data.cart.items || []);
+      const mappedItems = (res.data.cart.items || []).map(item => ({
+        ...item,
+        product: item.productId
+      }));
+      setCart(mappedItems);
     } catch (err) {
       console.error("Fetch cart error", err);
     }
@@ -29,12 +34,25 @@ export const CartProvider = ({ children }) => {
   };
 
   const addToCart = async (productId, quantity = 1) => {
+    if (!user) {
+      toast.error('Please login to acquire this masterpiece', {
+        style: { background: '#1A1A1A', color: '#fff', fontSize: '12px' }
+      });
+      return;
+    }
+
     try {
       const res = await API.post('/cart/add', { 
         item: { productId, quantity } 
       });
-      setCart(res.data.cart.items);
-      toast.success('Added to your collection');
+      const mappedItems = (res.data.cart.items || []).map(item => ({
+        ...item,
+        product: item.productId
+      }));
+      setCart(mappedItems);
+      toast.success('Piece added to your collection', {
+        style: { background: '#C9A84C', color: '#fff', fontSize: '12px' }
+      });
       return res.data;
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Unable to update registry";
@@ -43,10 +61,14 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const removeFromCart = async (productId) => {
+  const removeFromCart = async (productId, itemId) => {
     try {
-      const res = await API.post('/cart/remove', { productId });
-      setCart(res.data.cart.items);
+      const res = await API.post('/cart/remove', { productId, itemId });
+      const mappedItems = (res.data.cart.items || []).map(item => ({
+        ...item,
+        product: item.productId
+      }));
+      setCart(mappedItems);
     } catch (err) {
       console.error("Remove from cart error", err);
     }
@@ -55,17 +77,31 @@ export const CartProvider = ({ children }) => {
   const updateQuantity = async (productId, quantity) => {
     try {
       const res = await API.post('/cart/update', { productId, quantity });
-      setCart(res.data.cart.items);
+      const mappedItems = (res.data.cart.items || []).map(item => ({
+        ...item,
+        product: item.productId
+      }));
+      setCart(mappedItems);
     } catch (err) {
       console.error("Update cart error", err);
     }
   };
 
-  const clearCart = () => {
-    setCart([]);
+  const clearCart = async () => {
+    try {
+      await API.post('/cart/clear');
+      setCart([]);
+    } catch (err) {
+      console.error("Clear cart error", err);
+      // Fallback: clear local state anyway to unblock user
+      setCart([]);
+    }
   };
 
-  const cartTotal = cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+  const cartTotal = cart.reduce((total, item) => {
+    const price = item.product?.price || 0;
+    return total + (price * item.quantity);
+  }, 0);
   const cartCount = cart.reduce((count, item) => count + item.quantity, 0);
 
   return (

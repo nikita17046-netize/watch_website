@@ -150,8 +150,10 @@ const Navbar = () => {
             {/* Account */}
             <div className="relative group">
               <Link to={user ? "/profile" : "/login"} className="flex flex-col items-center gap-1.5 group text-gray-700 hover:text-black transition-colors">
-                <User size={26} strokeWidth={1.2} />
-                <span className="text-[11px] font-bold uppercase tracking-wider hidden sm:block font-inter">Account</span>
+                <User size={26} strokeWidth={1.2} className={user ? "text-luxury-gold" : ""} />
+                <span className="text-[11px] font-bold uppercase tracking-wider hidden sm:block font-inter">
+                  {user ? `Hello, ${user.username}` : 'Account'}
+                </span>
               </Link>
               {user && (
                 <div className="absolute right-0 top-full mt-4 w-56 bg-luxury-pearl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-luxury-sand rounded-xl p-2 z-[110]">
@@ -160,6 +162,10 @@ const Navbar = () => {
                     <p className="text-sm font-bold truncate font-inter">{user.username}</p>
                   </div>
                   <Link to="/profile" className="flex items-center px-4 py-2 text-xs font-bold hover:bg-luxury-sand rounded-lg transition-colors font-inter">Profile</Link>
+                  <Link to="/my-orders" className="flex items-center px-4 py-2 text-xs font-bold hover:bg-luxury-sand rounded-lg transition-colors font-inter">My Orders</Link>
+                  {user.role === 'admin' && (
+                    <Link to="/admin" className="flex items-center px-4 py-2 text-xs font-bold text-luxury-gold hover:bg-luxury-sand rounded-lg transition-colors font-inter">Admin Console</Link>
+                  )}
                   <button onClick={logout} className="w-full text-left flex items-center px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors font-inter">Logout</button>
                 </div>
               )}
@@ -184,10 +190,10 @@ const Navbar = () => {
               <span className="text-[11px] font-bold uppercase tracking-wider hidden sm:block font-inter">Cart</span>
             </Link>
 
-            {/* Track Order */}
-            <Link to="/orders" className="flex flex-col items-center gap-1.5 text-gray-700 hover:text-black transition-colors group">
+            {/* My Orders */}
+            <Link to="/my-orders" className="flex flex-col items-center gap-1.5 text-gray-700 hover:text-black transition-colors group">
               <Package size={26} strokeWidth={1.2} className="group-hover:translate-y-[-2px] transition-transform" />
-              <span className="text-[11px] font-bold uppercase tracking-wider hidden sm:block font-inter">Track</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider hidden sm:block font-inter">Orders</span>
             </Link>
           </div>
 
@@ -332,7 +338,7 @@ const Footer = () => {
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const hideLayout = ['/login', '/register'].includes(location.pathname);
+  const hideLayout = ['/login', '/register'].includes(location.pathname) || location.pathname.startsWith('/admin');
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-luxury-gold selection:text-white bg-luxury-pearl">

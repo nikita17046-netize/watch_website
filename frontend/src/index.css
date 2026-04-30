@@ -19,11 +19,15 @@
 }
 
 @layer base {
+  * {
+    font-family: 'Inter', 'Montserrat', sans-serif !important;
+  }
+
   body {
     background-color: var(--luxury-pearl);
     color: var(--luxury-charcoal);
-    font-family: 'Outfit', 'Montserrat', sans-serif;
     -webkit-font-smoothing: antialiased;
+    letter-spacing: 0.01em;
     overflow-x: hidden;
     background-image: url('https://grainy-gradients.vercel.app/noise.svg');
     background-attachment: fixed;
@@ -44,14 +48,10 @@
     z-index: 100;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-family: 'Playfair Display', serif;
-    letter-spacing: -0.02em;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -0.01em;
+    font-weight: 600;
   }
 }
 

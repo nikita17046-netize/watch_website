@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Play, Star, ShieldCheck, Globe, X, ChevronDown } from 'lucide-react';
+import { ArrowRight, Play, Star, ShieldCheck, Globe, X, ChevronDown, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import API from '../api/api';
+import { useWishlist } from '../context/WishlistContext';
 
 import heroVideo from '../assets/hero_video.mp4';
 
@@ -161,6 +162,7 @@ const Stat = ({ num, label }) => (
 /* ─── Main Home ─── */
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
+  const { addToWishlist, isInWishlist } = useWishlist();
   const [showVideo, setShowVideo] = useState(false);
   const { scrollY } = useScroll();
   const heroRef = useRef(null);
@@ -172,7 +174,7 @@ const Home = () => {
 
   useEffect(() => {
     API.get('/product/all').then(res => {
-      setFeaturedProducts(res.data.products.slice(0, 3));
+      setFeaturedProducts(res.data.products.slice(0, 4));
     }).catch(() => {});
   }, []);
 
@@ -266,7 +268,7 @@ const Home = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
             {featuredProducts.length > 0 ? featuredProducts.map((product, idx) => (
               <motion.div
                 key={product._id}
@@ -275,8 +277,24 @@ const Home = () => {
                 className={`group ${idx === 1 ? 'md:translate-y-16' : ''}`}
               >
                 <Link to={`/product/${product._id}`} className="block bg-white p-4 rounded-[2.5rem] shadow-sm hover:shadow-2xl border border-luxury-sand/40 transition-all duration-500 group-hover:-translate-y-2">
-                  <div className="relative aspect-[3/4] overflow-hidden rounded-[2rem] mb-6 bg-luxury-sand/20">
-                    <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" />
+                  <div className="relative aspect-[4/5] rounded-[3.5rem] bg-white premium-card mb-10">
+                    <div className="absolute top-8 right-8 z-20">
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          addToWishlist(product);
+                        }}
+                        className={`p-4 rounded-full backdrop-blur-md transition-all duration-300 shadow-lg ${isInWishlist(product._id) ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-400 hover:text-red-500'}`}
+                      >
+                        <Heart size={18} fill={isInWishlist(product._id) ? "currentColor" : "none"} />
+                      </button>
+                    </div>
+                    <img 
+                      src={product.images[0]} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover transition-transform duration-[2.5s] group-hover:scale-110" 
+                    />
                     <div className="absolute top-6 left-6">
                       <span className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full text-[9px] uppercase tracking-[0.3em] font-black shadow-sm text-luxury-charcoal">{product.brand}</span>
                     </div>
@@ -285,7 +303,7 @@ const Home = () => {
                     </div>
                   </div>
                   <div className="px-2 pb-2">
-                    <h3 className="text-xl font-playfair font-black text-luxury-charcoal mb-4 group-hover:text-[#C9A84C] transition-colors duration-500 line-clamp-1">{product.name}</h3>
+                    <h3 className="text-xl font-playfair font-medium text-luxury-charcoal mb-4 group-hover:text-[#C9A84C] transition-colors duration-500 line-clamp-1">{product.name}</h3>
                     <div className="flex justify-between items-center border-t border-luxury-sand/50 pt-4">
                       <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">{product.category}</span>
                       <span className="text-lg font-black tracking-tight text-[#0F2044]">${product.price.toLocaleString()}</span>

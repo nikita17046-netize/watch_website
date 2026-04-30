@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import API from '../api/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, SlidersHorizontal, ChevronDown, Grid, List, Search, X, ArrowLeft } from 'lucide-react';
+import { Filter, SlidersHorizontal, ChevronDown, Grid, List, Search, X, ArrowLeft, Heart } from 'lucide-react';
+import { useWishlist } from '../context/WishlistContext';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -10,6 +11,7 @@ const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const { addToWishlist, isInWishlist } = useWishlist();
 
   const categoryFilter = searchParams.get('category');
   const brandFilter = searchParams.get('brand');
@@ -237,6 +239,18 @@ const Products = () => {
                           alt={product.name} 
                           className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
                         />
+                        <div className="absolute top-8 right-8 z-10">
+                          <button 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              addToWishlist(product);
+                            }}
+                            className={`p-3 rounded-full backdrop-blur-md transition-all duration-300 shadow-sm ${isInWishlist(product._id) ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-400 hover:text-red-500'}`}
+                          >
+                            <Heart size={16} fill={isInWishlist(product._id) ? "currentColor" : "none"} />
+                          </button>
+                        </div>
                         <div className="absolute top-8 left-8">
                            <span className="bg-white/90 backdrop-blur-md px-5 py-2 rounded-full text-[8px] uppercase tracking-[0.3em] font-black shadow-sm">
                             {product.brand}
@@ -245,7 +259,7 @@ const Products = () => {
                       </div>
                       
                       <div className="px-4">
-                        <h3 className="text-3xl font-playfair font-black text-luxury-charcoal mb-3 group-hover:text-luxury-gold transition-colors duration-500">{product.name}</h3>
+                        <h3 className="text-xl font-playfair font-medium text-luxury-charcoal mb-4 group-hover:text-[#C9A84C] transition-colors duration-500 line-clamp-1">{product.name}</h3>
                         <div className="flex justify-between items-center">
                           <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">{product.category}</p>
                           <p className="text-xl font-black text-luxury-charcoal tracking-tight">${product.price.toLocaleString()}</p>

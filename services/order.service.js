@@ -1,40 +1,41 @@
 const orderModel = require("../models/order.model");
-const productModel = require("../models/product.model");
-
 
 // create order
-module.exports.CreateOrder = async ({ userId, items }) => {
-  let totalAmount = 0;
-
-  let orderItems = [];
-
-  for (let item of items) {
-    console.log(item);
-    const productId = item.productId;
-    const product = await productModel.findOne({ _id: productId });
-
-    if (!product) throw new Error("Product Not Found");
-
-    const itemsTotal = product.price * item.quantity;
-
-    totalAmount += itemsTotal;
-
-    orderItems.push({
-      productId: product._id,
-      quantity: item.quantity,
-      price: product.price,
-      total: itemsTotal,
+module.exports.createOrder = async ({ userId, items, totalAmount, shippingAddress, paymentMethod }) => {
+  try {
+    const order = new orderModel({
+      userId,
+      items: items.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: Number(item.price || 0),
+        total: Number(item.price || 0) * item.quantity
+      })),
+      totalAmount: Number(totalAmount),
+      shippingAddress,
+      paymentMethod,
+      status: 'Pending'
     });
+    
+    const savedOrder = await order.save();
+    return await orderModel.findById(savedOrder._id).populate('items.productId');
+  } catch (error) {
+    console.error("Order Service Error:", error.message);
+    throw error;
   }
-
-  return await orderModel.create({
-    userId,
-    items: orderItems,
-    totalbill: totalAmount,
-  });
 };
 
-// get order history or show order
-module.exports.GetOrder = async(userId)=>{
-    return await orderModel.findOne({userId});
-}
+// get user orders
+module.exports.GetMyOrders = async (userId) => {
+  return await orderModel.find({ userId }).populate('items.productId').sort({ createdAt: -1 });
+};
+
+// get all orders (Admin)
+module.exports.GetAllOrders = async () => {
+  return await orderModel.find().populate('userId', 'username email').populate('items.productId').sort({ createdAt: -1 });
+};
+
+// update order status
+module.exports.UpdateOrderStatus = async (orderId, status) => {
+  return await orderModel.findByIdAndUpdate(orderId, { status }, { new: true });
+};
