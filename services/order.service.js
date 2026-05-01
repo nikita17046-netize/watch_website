@@ -30,9 +30,14 @@ module.exports.GetMyOrders = async (userId) => {
   return await orderModel.find({ userId }).populate('items.productId').sort({ createdAt: -1 });
 };
 
-// get all orders (Admin)
+// get all orders (Admin) - OPTIMIZED: Removed heavy items.productId populate for list view
 module.exports.GetAllOrders = async () => {
-  return await orderModel.find().populate('userId', 'username email').populate('items.productId').sort({ createdAt: -1 });
+  return await orderModel.find().populate('userId', 'username email').sort({ createdAt: -1 });
+};
+
+// get single order details (Admin)
+module.exports.GetOrderById = async (orderId) => {
+  return await orderModel.findById(orderId).populate('userId', 'username email').populate('items.productId');
 };
 
 // update order status

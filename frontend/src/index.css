@@ -1,163 +1,96 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Outfit:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --luxury-gold: #1E40AF;
-  /* Royal Blue instead of Gold */
-  --luxury-gold-light: #60A5FA;
-  --luxury-gold-dark: #1E3A8A;
-  --luxury-pearl: #EBF2F8;
-  /* Soft Ice Blue */
-  --luxury-charcoal: #0F172A;
-  /* Deep Slate Blue */
-  --luxury-sand: #D9E4EF;
-  /* Azure Mist */
-  --luxury-blush: #F1F7FC;
+  --sidebar-bg: #1C2536;
+  --content-bg: #F9FAFB;
+  --accent-indigo: #6366F1;
+  --success-emerald: #10B981;
 }
 
-@layer base {
-  * {
-    font-family: 'Inter', 'Montserrat', sans-serif !important;
-  }
-
-  body {
-    background-color: var(--luxury-pearl);
-    color: var(--luxury-charcoal);
-    -webkit-font-smoothing: antialiased;
-    letter-spacing: 0.01em;
-    overflow-x: hidden;
-    background-image: url('https://grainy-gradients.vercel.app/noise.svg');
-    background-attachment: fixed;
-    opacity: 0.99;
-    /* Triggering a context for the background */
-  }
-
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('https://grainy-gradients.vercel.app/noise.svg');
-    opacity: 0.05;
-    pointer-events: none;
-    z-index: 100;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Inter', sans-serif;
-    letter-spacing: -0.01em;
-    font-weight: 600;
-  }
+body {
+  margin: 0;
+  font-family: 'Inter', 'Outfit', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--content-bg);
 }
 
-@layer components {
-  .luxury-btn {
-    @apply relative overflow-hidden px-10 py-5 text-[10px] font-black uppercase tracking-[0.4em] transition-all duration-500;
-  }
-
-  .luxury-btn-primary {
-    @apply bg-luxury-charcoal text-white hover:bg-luxury-gold;
-  }
-
-  .luxury-btn-outline {
-    @apply border border-luxury-charcoal text-luxury-charcoal hover:bg-luxury-charcoal hover:text-white;
-  }
-
-  .glass-nav {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  }
-
-  .premium-card {
-    background: white;
-    transition: all 700ms cubic-bezier(0.23, 1, 0.32, 1);
-    box-shadow: 0 10px 40px -15px rgba(0, 0, 0, 0.05);
-  }
-
-  .premium-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.12);
-  }
-
-  .text-gold-gradient {
-    background: linear-gradient(to right, #1E3A8A, #1E40AF, #60A5FA);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .back-btn-box {
-    @apply flex items-center gap-4 px-8 py-3 bg-luxury-sand text-luxury-charcoal rounded-full shadow-md transition-all duration-500 hover:shadow-xl hover:bg-luxury-gold hover:text-white hover:scale-105 border border-luxury-gold;
-  }
-
-  .back-btn-box span {
-    @apply text-[9px] uppercase tracking-[0.4em] font-black;
-  }
-
-  .back-btn-box .icon-container {
-    @apply w-8 h-8 rounded-full bg-white/40 flex items-center justify-center text-luxury-charcoal transition-all duration-500;
-  }
-
-  .back-btn-box:hover .icon-container {
-    @apply bg-white text-luxury-gold rotate-[360deg];
-  }
+/* --- THE "BOX" (TABLE) ENHANCEMENTS --- */
+.logistics-table-container {
+  border-radius: 2.5rem;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: white;
 }
 
-/* Custom Scrollbar */
+.table-row-premium {
+  border-bottom: 1px solid rgba(241, 245, 249, 0.5);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.table-row-premium:hover {
+  background: rgba(99, 102, 241, 0.02);
+  transform: translateX(4px);
+  border-left: 4px solid #6366f1;
+}
+
+/* --- GLOWING STATUS BADGES --- */
+.status-badge-pending {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.status-badge-delivered {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-badge-cancelled {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* --- PRICE VALUATION FONT --- */
+.valuation-text {
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+
+/* --- SCROLLBAR --- */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
-
 ::-webkit-scrollbar-track {
-  background: var(--luxury-sand);
+  background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: var(--luxury-gold);
+  background: #cbd5e1;
   border-radius: 10px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--luxury-gold-dark);
+/* --- MODAL GLASS EFFECT --- */
+.modal-glass {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Luxury Grain Effect */
-.bg-grain {
-  position: relative;
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
 }
-
-.bg-grain::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url('https://grainy-gradients.vercel.app/noise.svg');
-  opacity: 0.03;
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* Shimmer Animation */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.shimmer {
-  background: linear-gradient(90deg, rgba(30, 64, 175, 0) 0%, rgba(30, 64, 175, 0.2) 50%, rgba(30, 64, 175, 0) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 3s infinite;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
 }

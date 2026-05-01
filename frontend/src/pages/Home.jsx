@@ -345,57 +345,120 @@ const Home = () => {
       <OffersBanner />
 
       {/* ═══ HERITAGE EDITORIAL ═══ */}
-      <section className="py-40 bg-white">
-        <div className="container mx-auto px-6 lg:px-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
-            <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 1.2 }}>
-              <span className="text-[#C9A84C] uppercase tracking-[0.5em] text-[10px] font-black mb-6 block">Our Legacy</span>
-              <h2 className="text-6xl md:text-7xl font-playfair font-black mb-10 leading-none">Mastery in <br /><span className="italic font-light">Every Gear.</span></h2>
-              <p className="text-gray-500 text-lg font-light leading-loose mb-14 italic border-l-4 pl-8" style={{ borderColor: '#C9A84C' }}>
-                "At LUXE, we don't just curate products; we define lifestyles. Each piece is selected with obsessive attention to detail, ensuring unparalleled quality and timeless elegance."
-              </p>
-              <Link to="/products" className="group inline-flex items-center gap-4 text-[11px] uppercase tracking-[0.4em] font-black text-luxury-charcoal border-b-2 border-luxury-sand pb-2 hover:border-[#C9A84C] transition-all">
-                Discover the Catalogue <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
+      <section className="py-48 bg-white relative overflow-hidden">
+        {/* Subtle background decorative elements */}
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-slate-50/50 -skew-x-12 translate-x-20" />
+        
+        <div className="container mx-auto px-6 lg:px-20 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 50 }} 
+              whileInView={{ opacity: 1, y: 0 }} 
+              viewport={{ once: true }} 
+              transition={{ duration: 1.2, ease: [0.19, 1, 0.22, 1] }}
+            >
+              <span className="text-[#C9A84C] uppercase tracking-[0.7em] text-[10px] font-black mb-8 block flex items-center gap-4">
+                <span className="w-12 h-[1px] bg-[#C9A84C]" /> Our Heritage
+              </span>
+              <h2 className="text-7xl md:text-8xl font-playfair font-black mb-12 leading-[0.9] tracking-tighter text-slate-900">
+                Mastery in <br />
+                <span className="italic font-light text-[#C9A84C]">Every Gear.</span>
+              </h2>
+              <div className="relative pl-10 mb-14">
+                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#C9A84C] opacity-30" />
+                 <p className="text-slate-500 text-xl font-light leading-relaxed italic">
+                    "At LUXE, we don't just curate timepieces; we engineer legacies. Each mechanical heartbeat in our collection is a testament to centuries of Swiss horological perfection."
+                 </p>
+              </div>
+              <Link to="/products" className="group inline-flex items-center gap-6 text-[11px] uppercase tracking-[0.5em] font-black text-slate-900 transition-all">
+                Explore the Archives 
+                <div className="w-12 h-12 rounded-full border border-slate-100 flex items-center justify-center group-hover:bg-[#C9A84C] group-hover:border-[#C9A84C] group-hover:text-white transition-all">
+                   <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </div>
               </Link>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 1.5 }} className="relative">
-              <div className="aspect-[4/5] rounded-[4rem] overflow-hidden shadow-2xl">
-                <img src="https://images.unsplash.com/photo-1509048191080-d2984bad6ad5?q=80&w=1200" className="w-full h-full object-cover" alt="Craftsmanship" />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }} 
+              whileInView={{ opacity: 1, scale: 1 }} 
+              viewport={{ once: true }} 
+              transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }} 
+              className="relative"
+            >
+              <div className="aspect-[4/5] rounded-[5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] group">
+                <img 
+                  src="https://images.unsplash.com/photo-1523170335258-f5ed11844a49?q=80&w=1200" 
+                  className="w-full h-full object-cover transition-transform duration-[3s] group-hover:scale-110" 
+                  alt="Precision Craftsmanship" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              {/* Floating badge */}
+              
+              {/* Luxury Certification Badge */}
               <motion.div
-                className="absolute -bottom-10 -left-10 bg-white p-10 rounded-[2.5rem] shadow-2xl border border-luxury-sand hidden lg:block"
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.5, duration: 0.8 }}
+                className="absolute -bottom-16 -left-16 bg-white p-12 rounded-[3.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.2)] border border-slate-100 hidden lg:block z-20"
+                initial={{ opacity: 0, x: 30 }} 
+                whileInView={{ opacity: 1, x: 0 }} 
+                viewport={{ once: true }} 
+                transition={{ delay: 0.6, duration: 1 }}
               >
-                <Star className="mb-4" size={28} style={{ color: '#C9A84C' }} />
-                <p className="text-[9px] uppercase tracking-[0.25em] font-black text-luxury-charcoal leading-loose max-w-[160px]">
-                  Certified by the<br />Geneva Seal of Excellence
-                </p>
+                <div className="flex items-center gap-6">
+                   <div className="w-16 h-16 bg-[#C9A84C]/10 rounded-2xl flex items-center justify-center text-[#C9A84C]">
+                      <ShieldCheck size={32} />
+                   </div>
+                   <div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Authenticated By</p>
+                      <p className="text-sm font-playfair font-black text-slate-900 uppercase">Geneva Registry</p>
+                   </div>
+                </div>
               </motion.div>
+
+              {/* Decorative Floating Ring */}
+              <div className="absolute -top-10 -right-10 w-40 h-40 border border-[#C9A84C]/20 rounded-full animate-spin-slow" />
             </motion.div>
+
           </div>
         </div>
       </section>
 
+
       {/* ═══ GRID GALLERY ═══ */}
-      <section className="py-4 bg-luxury-pearl">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-3">
+      <section className="py-24 bg-white">
+        <div className="container mx-auto px-6 mb-16 text-center">
+           <span className="text-[#C9A84C] uppercase tracking-[0.6em] text-[9px] font-black mb-4 block">Visual Registry</span>
+           <h2 className="text-4xl font-playfair font-black text-slate-900 uppercase tracking-tight italic">The Visual Edit.</h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-4">
           {[
-            'https://images.unsplash.com/photo-1619134778706-7015533a6150?q=80&w=800',
-            'https://images.unsplash.com/photo-1461141346587-763ab02bced9?q=80&w=800',
-            'https://images.unsplash.com/photo-1542496658-e33a6d0d028f?q=80&w=800',
-            'https://images.unsplash.com/photo-1434056886845-dac89ffe9b56?q=80&w=800',
+            'https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?q=80&w=800',
+            'https://images.unsplash.com/photo-1585123334904-845d60e97b29?q=80&w=800',
+            'https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=800',
+            'https://images.unsplash.com/photo-1533139502658-0198f920d8e8?q=80&w=800',
           ].map((src, i) => (
             <motion.div
-              key={i} className="overflow-hidden rounded-2xl aspect-square group cursor-pointer"
-              initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+              key={i} 
+              className="overflow-hidden rounded-[2rem] aspect-[4/5] group cursor-pointer relative shadow-sm hover:shadow-2xl transition-all"
+              initial={{ opacity: 0, y: 30 }} 
+              whileInView={{ opacity: 1, y: 0 }} 
+              viewport={{ once: true }} 
+              transition={{ delay: i * 0.1, duration: 0.8 }}
             >
-              <img src={src} alt="Gallery" className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" />
+              <img 
+                src={src} 
+                alt="Curated Gallery" 
+                className="w-full h-full object-cover transition-transform duration-[3s] group-hover:scale-110" 
+              />
+              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                 <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white">
+                    <Heart size={20} />
+                 </div>
+              </div>
             </motion.div>
           ))}
         </div>
       </section>
+
 
       {/* ═══ TRUST SECTION ═══ */}
       <section className="py-40 bg-white">

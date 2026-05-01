@@ -20,6 +20,10 @@ import OfferProducts from './pages/OfferProducts';
 import Wishlist from './pages/Wishlist';
 import Checkout from './pages/Checkout';
 import MyOrders from './pages/MyOrders';
+import FAQ from './pages/FAQ';
+import Profile from './pages/Profile';
+
+
 
 // Protected Route Component
 const AdminRoute = ({ children }) => {
@@ -62,13 +66,11 @@ function App() {
               <Route path="/offer/:id" element={<OfferProducts />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/wishlist" element={<Wishlist />} />
+              <Route path="/faq" element={<FAQ />} />
+
               
-              <Route path="/profile" element={
-                <div className="pt-40 text-center min-h-screen">
-                  <h1 className="text-4xl font-playfair mb-8">My Account</h1>
-                  <p className="text-gray-500 uppercase tracking-widest text-xs">Welcome to your private lounge</p>
-                </div>
-              } />
+              <Route path="/profile" element={<Profile />} />
+
               
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/my-orders" element={<MyOrders />} />

@@ -37,4 +37,11 @@ router.post("/coupons", userMiddleware.authUser, isAdmin, couponController.Creat
 router.get("/coupons", userMiddleware.authUser, isAdmin, couponController.GetAllCoupons);
 router.delete("/coupons/:id", userMiddleware.authUser, isAdmin, couponController.DeleteCoupon);
 
+// FAQ Management
+router.get("/faqs", userMiddleware.authUser, isAdmin, adminController.GetAllFaqs);
+router.post("/faqs", userMiddleware.authUser, isAdmin, adminController.CreateFaq);
+router.patch("/faqs/:faqId", userMiddleware.authUser, isAdmin, adminController.UpdateFaq);
+router.delete("/faqs/:faqId", userMiddleware.authUser, isAdmin, adminController.DeleteFaq);
+
 module.exports = router;
+
