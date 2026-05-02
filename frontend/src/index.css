@@ -9,6 +9,12 @@
   --content-bg: #F9FAFB;
   --accent-indigo: #6366F1;
   --success-emerald: #10B981;
+  /* Luxury Palette */
+  --luxury-gold: #C9A84C;
+  --luxury-charcoal: #0F172A;
+  --luxury-sand: #F1F1F1;
+  --luxury-pearl: #FAFAFA;
+  --luxury-navy: #0F2044;
 }
 
 body {
@@ -93,4 +99,129 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #e2e8f0;
   border-radius: 10px;
+}
+
+/* --- LUXURY UTILITIES --- */
+.premium-card {
+  box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(20px);
+}
+
+.luxury-input {
+  border: none;
+  border-bottom: 1px solid #E2E8F0;
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+  padding-left: 3.5rem;
+  padding-right: 1rem;
+  background: transparent;
+  width: 100%;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.15em;
+  font-size: 14px;
+  color: #0F172A;
+}
+
+.luxury-input::placeholder {
+  color: #CBD5E1;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  font-weight: 500;
+}
+
+.luxury-input:focus {
+  border-color: #C9A84C;
+  outline: none;
+}
+
+.luxury-btn {
+  background: black;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.4em;
+  font-weight: 900;
+  font-size: 10px;
+  padding: 1.5rem 3rem;
+  border-radius: 0.75rem;
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.luxury-btn:hover {
+  background: #C9A84C;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(201, 168, 76, 0.3);
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-spin-slow {
+  animation: spin 12s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.back-btn-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 8px 24px 8px 8px;
+  border-radius: 100px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  transition: all 0.4s ease;
+}
+
+.back-btn-box:hover {
+  border-color: #C9A84C;
+  transform: translateX(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.back-btn-box .icon-container {
+  width: 32px;
+  height: 32px;
+  background: #0F172A;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.4s ease;
+}
+
+.back-btn-box:hover .icon-container {
+  background: #C9A84C;
+}
+
+.back-btn-box span {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #64748B;
+}
+
+.back-btn-box:hover span {
+  color: #0F172A;
 }

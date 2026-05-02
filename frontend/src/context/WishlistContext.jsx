@@ -14,7 +14,8 @@ export const WishlistProvider = ({ children }) => {
     if (user) {
       fetchWishlist();
     } else {
-      setWishlist([]);
+      const guestWishlist = JSON.parse(localStorage.getItem('guestWishlist') || '[]');
+      setWishlist(guestWishlist);
     }
   }, [user]);
 
@@ -22,7 +23,8 @@ export const WishlistProvider = ({ children }) => {
     setLoading(true);
     try {
       const res = await API.get('/wishlist/all');
-      const items = (res.data.wishlist?.productIds || []).map(p => p.item.productId).filter(p => p);
+      // Adjusting to match common backend patterns for wishlist items
+      const items = (res.data.wishlist?.productIds || []).map(p => p.item.productId || p.productId).filter(p => p && typeof p === 'object');
       setWishlist(items);
     } catch (err) {
       console.error("Fetch wishlist error", err);
@@ -31,32 +33,44 @@ export const WishlistProvider = ({ children }) => {
   };
 
   const addToWishlist = async (product) => {
+    const isExist = wishlist.some(item => (item._id || item) === product._id);
+
     if (!user) {
-      toast.error('Please login to curate your collection', {
-        style: { background: '#1A1A1A', color: '#fff', fontSize: '12px' }
-      });
+      let updatedWishlist;
+      if (isExist) {
+        updatedWishlist = wishlist.filter(item => (item._id || item) !== product._id);
+        toast.error(`${product.name} removed from registry`, {
+          style: { borderRadius: '15px', background: '#fff', color: '#1A1A1A', fontSize: '12px', fontWeight: 'bold' }
+        });
+      } else {
+        updatedWishlist = [...wishlist, product];
+        toast.success(`${product.name} added to registry!`, {
+          icon: '❤️',
+          style: { borderRadius: '15px', background: '#fff', color: '#1A1A1A', fontSize: '12px', fontWeight: 'bold' }
+        });
+      }
+      setWishlist(updatedWishlist);
+      localStorage.setItem('guestWishlist', JSON.stringify(updatedWishlist));
       return;
     }
 
-    const isExist = wishlist.some(item => item._id === product._id);
-    
     try {
       if (isExist) {
         const res = await API.post('/wishlist/remove', { productId: product._id });
-        const items = (res.data.wishlist?.productIds || []).map(p => p.item.productId).filter(p => p);
+        const items = (res.data.wishlist?.productIds || []).map(p => p.item.productId || p.productId).filter(p => p && typeof p === 'object');
         setWishlist(items);
         toast.error(`${product.name} removed from registry`, {
-          style: { borderRadius: '15px', background: '#fff', color: '#0F2044', fontSize: '12px', fontWeight: 'bold' }
+          style: { borderRadius: '15px', background: '#fff', color: '#1A1A1A', fontSize: '12px', fontWeight: 'bold' }
         });
       } else {
         const res = await API.post('/wishlist/add', { 
           item: { productId: product._id } 
         });
-        const items = (res.data.wishlist?.productIds || []).map(p => p.item.productId).filter(p => p);
+        const items = (res.data.wishlist?.productIds || []).map(p => p.item.productId || p.productId).filter(p => p && typeof p === 'object');
         setWishlist(items);
         toast.success(`${product.name} added to registry!`, {
           icon: '❤️',
-          style: { borderRadius: '15px', background: '#fff', color: '#0F2044', fontSize: '12px', fontWeight: 'bold' }
+          style: { borderRadius: '15px', background: '#fff', color: '#1A1A1A', fontSize: '12px', fontWeight: 'bold' }
         });
       }
     } catch (err) {
@@ -66,10 +80,23 @@ export const WishlistProvider = ({ children }) => {
   };
 
   const removeFromWishlist = async (productId) => {
+    if (!user) {
+      const updatedWishlist = wishlist.filter(item => (item._id || item) !== productId);
+      setWishlist(updatedWishlist);
+      localStorage.setItem('guestWishlist', JSON.stringify(updatedWishlist));
+      toast.error(`Item removed from your registry`, {
+        style: { borderRadius: '15px', background: '#fff', color: '#1A1A1A', fontSize: '12px', fontWeight: 'bold' }
+      });
+      return;
+    }
+
     try {
       const res = await API.post('/wishlist/remove', { productId });
-      const items = (res.data.wishlist?.productIds || []).map(p => p.item.productId).filter(p => p);
+      const items = (res.data.wishlist?.productIds || []).map(p => p.item.productId || p.productId).filter(p => p && typeof p === 'object');
       setWishlist(items);
+      toast.error(`Item removed from your registry`, {
+        style: { borderRadius: '15px', background: '#fff', color: '#1A1A1A', fontSize: '12px', fontWeight: 'bold' }
+      });
     } catch (err) {
       console.error("Remove from wishlist error", err);
     }

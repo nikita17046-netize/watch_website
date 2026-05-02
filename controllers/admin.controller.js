@@ -3,6 +3,8 @@ const orderModel = require("../models/order.model");
 const productModel = require("../models/product.model");
 const offerModel = require("../models/offer.model");
 const faqModel = require("../models/faq.model");
+const adminService = require("../services/admin.service");
+const { validationResult } = require("express-validator");
 
 
 module.exports.GetDashboardStats = async (req, res) => {
@@ -84,42 +86,54 @@ module.exports.GetDashboardStats = async (req, res) => {
     }
 };
 
-module.exports.GetAllUsers = async (req, res) => {
-    try {
-        const users = await userModel.find({ role: 'user' }).select('-password');
-        res.status(200).json(users);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
+// get all user
+module.exports.AllUser = async (req, res) => {
+  try {
+    const users = await adminService.getAllUser();
+
+    return res.status(200).json({ message: "User Fetch Sucessfully", users });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
 };
 
-module.exports.ToggleUserBlock = async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const user = await userModel.findById(userId);
-        if (!user) return res.status(404).json({ message: "User not found" });
+// delete user
+module.exports.deleteUser = async (req, res) => {
+  try {
+    const user = await adminService.deleteUser(req.params.id);
 
-        user.isBlocked = !user.isBlocked;
-        await user.save();
-
-        res.status(200).json({ message: `User ${user.isBlocked ? 'blocked' : 'unblocked'} successfully`, user });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+    if (!user) {
+      return res.status(404).json({ message: "User not Find" });
     }
+
+    return res.status(200).json({ message: "User Delete Successfully" });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
 };
 
-module.exports.UpdateOrderStatus = async (req, res) => {
-    try {
-        const { orderId } = req.params;
-        const { status } = req.body;
-        
-        const order = await orderModel.findByIdAndUpdate(orderId, { status }, { new: true });
-        if (!order) return res.status(404).json({ message: "Order not found" });
+// update user role
+module.exports.updateUserRole = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { role } = req.body;
 
-        res.status(200).json({ message: "Order status updated", order });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+    if (req.user.role !== "admin") {
+      return res.status(401).json({ message: "Access Denined !!" });
     }
+
+    const user = await adminService.updateUserRole({ userId, role });
+
+    if (!user) {
+      throw new Error("User Not Found !!");
+    }
+
+    return res
+      .status(200)
+      .json({ message: "User Role Updated Successfully", user });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
 };
 
 // FAQ Management

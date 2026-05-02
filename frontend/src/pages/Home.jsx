@@ -174,7 +174,7 @@ const Home = () => {
 
   useEffect(() => {
     API.get('/product/all').then(res => {
-      setFeaturedProducts(res.data.products.slice(0, 4));
+      setFeaturedProducts(res.data.products.slice(0, 8));
     }).catch(() => {});
   }, []);
 

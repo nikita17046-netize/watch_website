@@ -7,22 +7,24 @@ module.exports.AddToCart = async (req, res) => {
     const userId = req.user.id;
     const { item } = req.body;
 
-    const exist = await cartModel.findOne({ userId });
-    
-    if (exist) {
-      const isDuplicate = exist.items.some(val => val.productId.toString() === item.productId.toString());
-      if (isDuplicate) {
-        return res.status(400).json({ message: "Product is already in your cart" });
+    const Exist = await cartModel.findOne({ userId });
+    const existProduct = Exist.items.map((val) => {
+      const ids = val.productId;
+      return ids;
+    });
+   
+    existProduct.forEach((e) => {
+      if(e.equals(item.productId)){
+        return res.status(400).json({message: "Product Already Is Add Into Cart"})
       }
-    }
+    });
 
     const cart = await cartService.addToCart({ userId, item });
 
     return res
       .status(200)
-      .json({ message: "Item added to cart successfully", cart });
+      .json({ message: "add item to cart successfully", cart });
   } catch (error) {
-    console.error("AddToCart Error:", error);
     return res.status(400).json({ message: error.message });
   }
 };
@@ -50,42 +52,16 @@ module.exports.GetCart = async (req, res) => {
 module.exports.RemoveItem = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { productId, itemId } = req.body;
-    console.log("RemoveItem - User:", userId, "Product:", productId, "Item:", itemId);
+    const productId = req.params.id;
 
-    const cart = await cartService.RemoveSingleProduct({ userId, productId, itemId });
-
-    return res
-      .status(200)
-      .json({ message: "Remove Item from Cart Successfully", cart });
-  } catch (error) {
-    console.error("RemoveItem Error:", error);
-    return res.status(400).json({ message: error.message });
-  }
-};
-
-// Update quantity
-module.exports.UpdateQuantity = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { productId, quantity } = req.body;
-
-    const cart = await cartService.UpdateQuantity({ userId, productId, quantity });
+    await cartService.RemoveSingleProduct({ userId, productId });
 
     return res
       .status(200)
-      .json({ message: "Quantity updated successfully", cart });
+      .json({ message: "Remove Item from Cart Sucessfully " });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
 
-module.exports.ClearCart = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    await cartService.ClearCart(userId);
-    return res.status(200).json({ message: "Cart cleared successfully" });
-  } catch (error) {
-    return res.status(400).json({ message: error.message });
-  }
-};
+

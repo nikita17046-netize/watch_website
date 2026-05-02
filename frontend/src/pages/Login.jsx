@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
-import { Mail, Lock, ArrowRight, Loader2, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Loader2, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+// Use the generated image path
+const LOGIN_BG = "/luxury_watch_login_bg_1777638198174.png";
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -23,7 +26,6 @@ const Login = () => {
       const data = await login(email, password);
       toast.success('Access Granted. Welcome back.');
       
-      // Redirect based on role
       if (data.user?.role === 'admin') {
         navigate('/admin');
       } else {
@@ -36,84 +38,81 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-luxury-sand/30 flex items-center justify-center p-6 md:p-12">
-      {/* Contained Card Container */}
+    <div className="min-h-screen bg-luxury-pearl flex items-center justify-center p-4 md:p-8">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, ease: [0.19, 1, 0.22, 1] }}
-        className="w-full max-w-6xl bg-white rounded-[3.5rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] overflow-hidden flex flex-col md:flex-row min-h-[700px] border border-white"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-6xl bg-white rounded-[4rem] shadow-[0_50px_120px_-20px_rgba(0,0,0,0.18)] overflow-hidden flex flex-col md:flex-row min-h-[750px] border border-white relative"
       >
-        {/* Left: Cinematic Image Section (Contained) */}
-        <div className="hidden md:flex md:w-1/2 relative bg-luxury-charcoal items-center justify-center p-16 overflow-hidden">
-          <img
-            src="/luxury_login_bg_1777480747179.png"
-            alt="Luxury Watch Detail"
-            className="absolute inset-0 w-full h-full object-cover opacity-60 scale-110"
+        {/* Left Section: Cinematic Image */}
+        <div className="hidden md:flex md:w-1/2 relative bg-luxury-charcoal overflow-hidden group">
+          <motion.img
+            initial={{ scale: 1.2 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 2.5 }}
+            src={LOGIN_BG}
+            alt="Luxury Watch Movement"
+            className="absolute inset-0 w-full h-full object-cover opacity-60 transition-transform duration-[10s] group-hover:scale-110"
           />
+          
+          <div className="absolute inset-0 bg-gradient-to-t from-luxury-navy/90 via-luxury-navy/40 to-transparent" />
 
-          <div className="relative z-10 text-white">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="h-[1px] w-12 bg-luxury-gold"></div>
-              <span className="text-[10px] uppercase tracking-[0.5em] font-black text-luxury-gold">Maison Horlogère</span>
+          <div className="relative z-10 w-full h-full flex flex-col justify-between p-20">
+            <div>
+              <div className="flex items-center gap-4 mb-8">
+                <div className="h-[1px] w-12 bg-luxury-gold shimmer"></div>
+                <span className="text-[10px] uppercase tracking-[0.7em] font-black text-luxury-gold">Maison LUXE</span>
+              </div>
+              <h1 className="text-6xl lg:text-8xl font-playfair font-black text-white leading-[0.85] tracking-tighter mb-10">
+                THE <br />
+                <span className="italic font-light text-luxury-gold">VAULT.</span>
+              </h1>
             </div>
-            <h1 className="text-5xl lg:text-6xl font-playfair font-black leading-tight mb-8">
-              The Registry <br />
-              <span className="italic font-light opacity-80">Access.</span>
-            </h1>
-            <p className="text-sm text-gray-300 font-medium leading-loose tracking-wide opacity-80 uppercase text-[9px] max-w-xs">
-              Enter the private vault of curated excellence and high-horology treasures.
-            </p>
-          </div>
 
-          <div className="absolute bottom-12 left-12">
-            <Link to="/" className="flex items-center gap-3 text-white/50 hover:text-white transition-colors group">
-              <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-              <span className="text-[9px] uppercase tracking-[0.3em] font-black">Back to House</span>
-            </Link>
+            <div className="space-y-12">
+               <div className="max-w-xs">
+                 <p className="text-[10px] uppercase tracking-[0.4em] font-black text-white/40 mb-4">Registry Access</p>
+                 <p className="text-white/60 text-xs leading-loose font-medium tracking-widest uppercase">
+                    Authenticated access for verified horology collectors and boutique members.
+                 </p>
+               </div>
+               
+               <Link to="/" className="back-btn-box inline-flex">
+                 <div className="icon-container">
+                    <ArrowLeft size={14} />
+                 </div>
+                 <span>Return to House</span>
+               </Link>
+            </div>
           </div>
         </div>
 
-        {/* Right: Authentication Form (Contained) */}
-        <div className="w-full md:w-1/2 flex items-center justify-center p-10 md:p-16 lg:p-20 bg-white">
-          <div className="w-full max-w-md">
-            <div className="mb-12">
-              <Link to="/" className="inline-flex items-center gap-3 mb-10 group">
-                <svg width="44" height="44" viewBox="0 0 200 200" className="transition-transform duration-700 group-hover:rotate-[8deg]">
-                  <defs>
-                    <linearGradient id="logoGold" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#C9A84C" /><stop offset="50%" stopColor="#F0D080" /><stop offset="100%" stopColor="#A07830" />
-                    </linearGradient>
-                    <linearGradient id="logoNavy" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#0F2044" /><stop offset="100%" stopColor="#1A3366" />
-                    </linearGradient>
-                    <linearGradient id="logoDial" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#EAF0F8" /><stop offset="100%" stopColor="#C8D8EC" />
-                    </linearGradient>
-                  </defs>
-                  <circle cx="100" cy="100" r="97" fill="url(#logoGold)" />
-                  <circle cx="100" cy="100" r="88" fill="url(#logoNavy)" />
-                  <clipPath id="lRightHalf"><rect x="100" y="12" width="88" height="176" /></clipPath>
-                  <circle cx="100" cy="100" r="72" fill="url(#logoDial)" clipPath="url(#lRightHalf)" />
-                  <text x="72" y="118" fontFamily="Georgia, serif" fontWeight="bold" fontSize="72" fill="url(#logoGold)" textAnchor="middle" style={{ fontStyle: 'italic' }}>L</text>
-                  <circle cx="100" cy="100" r="5" fill="url(#logoGold)" />
-                </svg>
-                <span className="text-xl font-playfair font-black tracking-[0.35em] text-luxury-charcoal">LUXE</span>
+        {/* Right Section: Form */}
+        <div className="w-full md:w-1/2 flex items-center justify-center p-12 md:p-24 bg-white relative">
+          <div className="w-full max-w-sm">
+            <div className="mb-20">
+              <Link to="/" className="inline-flex items-center gap-4 mb-14 group">
+                <div className="w-12 h-12 bg-luxury-charcoal rounded-2xl flex items-center justify-center text-luxury-gold shadow-lg transition-transform group-hover:rotate-[10deg] duration-500">
+                   <span className="font-playfair font-black text-2xl italic">L</span>
+                </div>
+                <span className="text-2xl font-playfair font-black tracking-[0.4em] text-luxury-charcoal">LUXE</span>
               </Link>
-              <span className="text-luxury-gold uppercase tracking-[0.6em] text-[10px] font-black mb-3 block">Secured Entrance</span>
-              <h2 className="text-4xl font-playfair font-black text-black mb-3">Welcome.</h2>
-              <p className="text-gray-400 text-[10px] uppercase tracking-[0.3em] font-bold">Please authenticate to access your collection.</p>
+              
+              <span className="text-luxury-gold uppercase tracking-[0.7em] text-[9px] font-black mb-4 block">Identity Verification</span>
+              <h2 className="text-5xl font-playfair font-black text-luxury-charcoal mb-4">Welcome.</h2>
+              <p className="text-gray-400 text-[10px] uppercase tracking-[0.4em] font-bold">Please authenticate to access your collection.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-10">
-              <div className="space-y-3 group">
-                <label className="text-[9px] uppercase tracking-[0.4em] font-black text-gray-400 ml-1 group-focus-within:text-black">Email Identity</label>
-                <div className="relative border-b border-luxury-sand py-4 focus-within:border-black transition-colors">
-                  <Mail size={16} className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-300" />
+              <div className="space-y-2 group">
+                <label className="text-[10px] uppercase tracking-[0.4em] font-black text-gray-400 ml-1 group-focus-within:text-luxury-gold transition-colors">Registry Email</label>
+                <div className="relative">
+                  <Mail size={18} className="absolute left-1 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-luxury-gold transition-colors" />
                   <input
                     type="email"
-                    placeholder="member@luxury.com"
-                    className="w-full pl-10 bg-transparent outline-none text-sm font-bold tracking-widest text-black"
+                    placeholder="MEMBER@LUXE.COM"
+                    className="luxury-input pl-12"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -121,17 +120,17 @@ const Login = () => {
                 </div>
               </div>
 
-              <div className="space-y-3 group">
+              <div className="space-y-2 group">
                 <div className="flex justify-between items-center ml-1">
-                  <label className="text-[9px] uppercase tracking-[0.4em] font-black text-gray-400 group-focus-within:text-black">Security Cipher</label>
-                  <button type="button" className="text-[9px] uppercase tracking-widest text-luxury-gold font-bold hover:text-black transition-colors">Recover?</button>
+                  <label className="text-[10px] uppercase tracking-[0.4em] font-black text-gray-400 group-focus-within:text-luxury-gold transition-colors">Security Key</label>
+                  <button type="button" className="text-[9px] uppercase tracking-widest text-luxury-gold font-bold hover:text-luxury-charcoal transition-colors">Recover?</button>
                 </div>
-                <div className="relative border-b border-luxury-sand py-4 focus-within:border-black transition-colors">
-                  <Lock size={16} className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-300" />
+                <div className="relative">
+                  <Lock size={18} className="absolute left-1 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-luxury-gold transition-colors" />
                   <input
                     type="password"
                     placeholder="••••••••"
-                    className="w-full pl-10 bg-transparent outline-none text-sm font-bold tracking-widest text-black"
+                    className="luxury-input pl-12"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -139,23 +138,28 @@ const Login = () => {
                 </div>
               </div>
 
-              <div className="pt-4">
+              <div className="pt-8">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-black text-white py-6 text-[10px] uppercase tracking-[0.5em] font-black rounded-xl hover:bg-luxury-gold transition-all duration-500 shadow-xl flex items-center justify-center gap-6 group relative overflow-hidden"
+                  className="luxury-btn w-full"
                 >
-                  <span className="relative z-10">
-                    {loading ? <Loader2 className="animate-spin" size={18} /> : "Authenticate"}
-                  </span>
-                  {!loading && <ArrowRight size={18} className="relative z-10 group-hover:translate-x-2 transition-transform duration-500" />}
+                  {loading ? <Loader2 className="animate-spin" size={18} /> : (
+                    <>
+                      <span>Enter the Vault</span>
+                      <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
+                    </>
+                  )}
                 </button>
               </div>
             </form>
 
-            <div className="mt-16 pt-10 border-t border-luxury-sand text-center">
-              <p className="text-[10px] text-gray-400 uppercase tracking-[0.3em] font-bold mb-4">Not a member yet?</p>
-              <Link to="/register" className="text-black font-black text-[10px] uppercase tracking-widest hover:text-luxury-gold transition-colors">Request Access</Link>
+            <div className="mt-24 pt-12 border-t border-luxury-sand text-center">
+              <p className="text-[10px] text-gray-400 uppercase tracking-[0.4em] font-black mb-6">Not a member yet?</p>
+              <Link to="/register" className="group inline-flex items-center gap-3 text-luxury-charcoal font-black text-[10px] uppercase tracking-widest hover:text-luxury-gold transition-all">
+                 Request Membership Access
+                 <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
             </div>
           </div>
         </div>
@@ -163,12 +167,5 @@ const Login = () => {
     </div>
   );
 };
-
-// Simple ChevronRight icon as lucide-react might not have it in the same name or to avoid import issues if not explicitly added
-const ChevronRight = ({ size }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m9 18 6-6-6-6" />
-  </svg>
-);
 
 export default Login;

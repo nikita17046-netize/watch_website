@@ -45,7 +45,11 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     const res = await API.post('/user/register', userData);
-    // Removed automatic login logic as per user request
+    if (res.data.token) {
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      setUser(res.data.user);
+    }
     return res.data;
   };
 

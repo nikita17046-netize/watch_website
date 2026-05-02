@@ -50,30 +50,36 @@ module.exports.singleProduct = async (id) => {
 };
 
 // all product
-module.exports.AllProduct = async (filters = {}) => {
-  const { category, brand, isSale, search, sort } = filters;
-  let query = {};
-
-  if (category) query.category = category;
-  if (brand) query.brand = brand;
-  if (isSale === 'true') query.isSale = true;
+module.exports.AllProduct = async (query = {}) => {
+  const { category, brand, sale, sort, search } = query;
+  
+  let filter = {};
+  if (category) filter.category = category;
+  if (brand) filter.brand = brand;
+  if (sale === 'true') filter.discount = { $gt: 0 };
   
   if (search) {
-    query.$or = [
+    filter.$or = [
       { name: { $regex: search, $options: 'i' } },
       { description: { $regex: search, $options: 'i' } },
-      { brand: { $regex: search, $options: 'i' } },
-      { category: { $regex: search, $options: 'i' } }
+      { brand: { $regex: search, $options: 'i' } }
     ];
   }
 
-  let sortOptions = {};
-  if (sort === 'price-low') sortOptions.price = 1;
-  else if (sort === 'price-high') sortOptions.price = -1;
-  else if (sort === 'rating') sortOptions.rating = -1;
-  else sortOptions.createdAt = -1; // default to newest
+  let queryBuilder = productModel.find(filter);
 
-  return await productModel.find(query).sort(sortOptions);
+  // Sorting
+  if (sort === 'newest') {
+    queryBuilder = queryBuilder.sort({ createdAt: -1 });
+  } else if (sort === 'price-low') {
+    queryBuilder = queryBuilder.sort({ price: 1 });
+  } else if (sort === 'price-high') {
+    queryBuilder = queryBuilder.sort({ price: -1 });
+  } else {
+    queryBuilder = queryBuilder.sort({ createdAt: -1 }); // Default to newest
+  }
+
+  return await queryBuilder;
 };
 
 // update product

@@ -33,10 +33,6 @@ let productSchema = mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    isSale: {
-      type: Boolean,
-      default: false,
-    },
     sku: {
       type: String,
       unique: true,

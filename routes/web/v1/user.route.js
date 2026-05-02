@@ -48,6 +48,4 @@ router.post("/forget-password", userController.forgetPassword)
 // reset password
 router.post("/reset-password/:token", userController.resetPassword)
 
-router.get("/all", middleware.authUser, userController.GetAllUsers);
-
 module.exports = router;

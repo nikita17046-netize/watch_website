@@ -41,17 +41,10 @@ module.exports.createProduct = async (req, res) => {
 // all products
 module.exports.allProduct = async (req, res) => {
   try {
-    const { category, brand, sale, search, sort } = req.query;
-    const products = await productService.AllProduct({ 
-      category, 
-      brand, 
-      isSale: sale, 
-      search, 
-      sort 
-    });
+    const products = await productService.AllProduct(req.query);
 
-    if (!products) {
-      return res.status(404).json({ message: "Products Not Found !!" });
+    if (!products || products.length === 0) {
+      return res.status(200).json({ message: "No Products Found", products: [] });
     }
 
     return res.status(200).json({ message: "Fetch All Products:", products });

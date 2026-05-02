@@ -10,12 +10,9 @@ router.post("/add", userMiddleware.authUser, cartController.AddToCart);
 router.get("/all", userMiddleware.authUser, cartController.GetCart)
 
 // remove single item from cart
-router.post("/remove", userMiddleware.authUser, cartController.RemoveItem)
+router.delete("/product/:id", userMiddleware.authUser, cartController.RemoveItem)
 
-// update quantity
-router.post("/update", userMiddleware.authUser, cartController.UpdateQuantity)
 
-// clear cart
-router.post("/clear", userMiddleware.authUser, cartController.ClearCart)
+// remove all item form cart --> empty cart
 
 module.exports = router;

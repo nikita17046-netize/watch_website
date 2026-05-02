@@ -47,10 +47,6 @@ module.exports.loginUser = async (req, res) => {
     return res.status(401).json({ message: "Email is invaild" });
   }
 
-  if (checkUser.isBlocked) {
-    return res.status(403).json({ message: "Your account has been blacklisted from Maison LUXE. Contact concierge." });
-  }
-
   const isMatch = await checkUser.comparePassword(password);
 
   if (!isMatch) {
@@ -60,7 +56,7 @@ module.exports.loginUser = async (req, res) => {
   const token = checkUser.generateAuthToken();
   res.cookie("token", token);
 
-  res.status(200).json({ token, user: checkUser });
+  res.status(200).json({ token, checkUser });
 };
 
 module.exports.profile = (req, res) => {
@@ -112,14 +108,5 @@ module.exports.resetPassword = async (req, res) => {
     return res.status(200).json({ message: "Password Reset Successfully " });
   } catch (error) {
     return res.status(400).json({ message: error.message });
-  }
-};
-
-module.exports.GetAllUsers = async (req, res) => {
-  try {
-    const users = await userModel.find().select("-password");
-    res.status(200).json({ users });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
   }
 };
