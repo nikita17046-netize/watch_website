@@ -30,7 +30,7 @@ module.exports.CreateOrder = async ({ userId, items }) => {
   return await orderModel.create({
     userId,
     items: orderItems,
-    totalbill: totalAmount,
+    totalAmount: totalAmount,
   });
 };
 

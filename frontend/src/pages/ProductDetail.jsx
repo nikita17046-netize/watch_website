@@ -20,6 +20,10 @@ const ProductDetail = () => {
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -32,7 +36,19 @@ const ProductDetail = () => {
       }
       setLoading(false);
     };
+
+    const fetchReviews = async () => {
+      try {
+        const res = await API.get(`/review/product/${id}`);
+        setReviews(res.data.reviews || []);
+      } catch (err) {
+        console.error("Reviews error", err);
+      }
+      setReviewsLoading(false);
+    };
+
     fetchProduct();
+    fetchReviews();
   }, [id]);
 
   const handleAddToCart = async () => {
@@ -43,6 +59,33 @@ const ProductDetail = () => {
       console.error("Cart error", err);
     }
     setAdding(false);
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      toast.error("Please login to share your experience");
+      return;
+    }
+    if (!newReview.comment.trim()) {
+      toast.error("Please share your thoughts first");
+      return;
+    }
+
+    setSubmittingReview(true);
+    try {
+      const res = await API.post('/review/add', {
+        productId: id,
+        rating: newReview.rating,
+        comment: newReview.comment
+      });
+      setReviews([res.data.review, ...reviews]);
+      setNewReview({ rating: 5, comment: '' });
+      toast.success("Review shared with the community");
+    } catch (err) {
+      toast.error("Unable to process review at this moment");
+    }
+    setSubmittingReview(false);
   };
 
   if (loading) return (
@@ -74,7 +117,7 @@ const ProductDetail = () => {
           <span className="text-[#C9A84C]">{product.brand}</span>
         </div>
 
-        <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-[#F0E6D2]">
+        <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-[#F0E6D2] mb-20">
           <div className="grid grid-cols-1 lg:grid-cols-2">
             
             {/* Left: Vibrant Image Showcase */}
@@ -118,7 +161,7 @@ const ProductDetail = () => {
                     <Star size={14} fill="currentColor" />
                     <Star size={14} fill="currentColor" />
                     <Star size={14} fill="currentColor" className="opacity-30" />
-                    <span className="ml-2 text-[10px] text-gray-400 font-bold uppercase tracking-widest">(4.8/5)</span>
+                    <span className="ml-2 text-[10px] text-gray-400 font-bold uppercase tracking-widest">({reviews.length} Experiences)</span>
                   </div>
                 </div>
                 <p className="text-gray-500 text-sm leading-relaxed mb-8">
@@ -184,6 +227,92 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* FAQ & REVIEW SECTION */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
+          
+          {/* FAQ Section */}
+          <div className="space-y-10">
+            <h3 className="text-4xl font-playfair text-[#1A1A1A]">Concierge <span className="italic font-light">FAQ.</span></h3>
+            <div className="space-y-6">
+              {[
+                { q: "Is this piece authentic?", a: "Every timepiece in our registry is certified genuine and comes with original manufacturer documentation." },
+                { q: "What is the warranty period?", a: "We provide a 2-year international warranty covering movement and manufacturing defects." },
+                { q: "Can I return the product?", a: "Yes, we offer a 14-day complimentary return policy for items in their original, unworn condition." }
+              ].map((faq, i) => (
+                <div key={i} className="p-8 bg-white border border-[#F0E6D2] rounded-3xl">
+                  <h4 className="text-sm font-black uppercase tracking-widest text-[#C9A84C] mb-4 flex items-center gap-4">
+                    <Info size={16} /> {faq.q}
+                  </h4>
+                  <p className="text-gray-500 text-[11px] leading-relaxed font-bold tracking-widest uppercase">{faq.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Review Section */}
+          <div className="space-y-10">
+            <h3 className="text-4xl font-playfair text-[#1A1A1A]">Client <span className="italic font-light">Gallery.</span></h3>
+            
+            {/* Add Review Form */}
+            {user && (
+              <form onSubmit={handleSubmitReview} className="bg-white p-8 rounded-3xl border-2 border-dashed border-[#C9A84C]/30 mb-12">
+                <div className="flex items-center gap-4 mb-6">
+                  {[1, 2, 3, 4, 5].map(s => (
+                    <button key={s} type="button" onClick={() => setNewReview({ ...newReview, rating: s })} className="transition-transform hover:scale-125">
+                      <Star size={20} fill={s <= newReview.rating ? "#C9A84C" : "none"} color={s <= newReview.rating ? "#C9A84C" : "#D1D5DB"} />
+                    </button>
+                  ))}
+                  <span className="text-[10px] uppercase font-black tracking-widest text-gray-400 ml-4">Rate your piece</span>
+                </div>
+                <textarea 
+                  value={newReview.comment}
+                  onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                  placeholder="Share your experience with this masterpiece..."
+                  className="w-full bg-[#F9F5EF] rounded-2xl p-6 text-xs font-bold tracking-widest outline-none border-2 border-transparent focus:border-[#C9A84C] transition-all resize-none mb-6"
+                  rows="3"
+                />
+                <button 
+                  type="submit"
+                  disabled={submittingReview}
+                  className="w-full bg-[#1A1A1A] text-white py-4 rounded-full text-[10px] uppercase font-black tracking-widest hover:bg-[#C9A84C] transition-all disabled:opacity-50"
+                >
+                  {submittingReview ? 'Transmitting...' : 'Post Experience'}
+                </button>
+              </form>
+            )}
+
+            <div className="space-y-8">
+              {reviewsLoading ? (
+                <p className="text-center text-gray-300 italic">Curating reviews...</p>
+              ) : reviews.length === 0 ? (
+                <div className="text-center py-20 bg-white rounded-3xl border border-[#F0E6D2]">
+                  <Sparkles size={32} className="text-[#C9A84C]/20 mx-auto mb-4" />
+                  <p className="text-gray-400 text-[10px] uppercase font-black tracking-widest">No experiences shared yet. Be the first.</p>
+                </div>
+              ) : (
+                reviews.map((rev) => (
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} key={rev._id} className="bg-white p-8 rounded-3xl border border-[#F0E6D2] relative group">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <div className="flex items-center gap-1 text-[#C9A84C] mb-2">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} size={10} fill={i < rev.rating ? "currentColor" : "none"} strokeWidth={3} />
+                          ))}
+                        </div>
+                        <h5 className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">{rev.userId?.username || 'Client'}</h5>
+                      </div>
+                      <span className="text-[8px] text-gray-300 font-bold tracking-tighter">{new Date(rev.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <p className="text-[11px] text-gray-500 italic leading-relaxed">"{rev.comment}"</p>
+                  </motion.div>
+                ))
+              )}
+            </div>
+          </div>
+
+        </div>
+
       </div>
     </div>
   );

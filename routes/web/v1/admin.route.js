@@ -14,6 +14,38 @@ router.get(
   adminController.AllUser,
 );
 
+// Get Dashboard Stats
+router.get(
+  "/stats",
+  usermiddleware.authUser,
+  middleware.authAdmin,
+  adminController.GetDashboardStats
+);
+
+// Get All Users (for the clients tab)
+router.get(
+  "/users",
+  usermiddleware.authUser,
+  middleware.authAdmin,
+  adminController.AllUser
+);
+
+// Get All Orders
+router.get(
+  "/orders",
+  usermiddleware.authUser,
+  middleware.authAdmin,
+  adminController.GetAllOrders
+);
+
+// Update Order Status
+router.post(
+  "/orders/status/:orderId",
+  usermiddleware.authUser,
+  middleware.authAdmin,
+  adminController.UpdateOrderStatus
+);
+
 // Delete User
 router.delete(
   "/user/:id",
@@ -32,7 +64,7 @@ router.put(
 );
 
 // FAQ Management
-router.get("/faqs", usermiddleware.authUser, middleware.authAdmin, adminController.GetAllFaqs);
+router.get("/faqs", adminController.GetAllFaqs);
 router.post("/faqs", usermiddleware.authUser, middleware.authAdmin, adminController.CreateFaq);
 router.patch("/faqs/:faqId", usermiddleware.authUser, middleware.authAdmin, adminController.UpdateFaq);
 router.delete("/faqs/:faqId", usermiddleware.authUser, middleware.authAdmin, adminController.DeleteFaq);

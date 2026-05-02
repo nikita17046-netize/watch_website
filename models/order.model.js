@@ -6,15 +6,31 @@ let OrderSchema = mongoose.Schema({
     ref: "user",
   },
   items: [
-    { productId: String, quantity: Number, price: Number, total: Number },
+    { 
+      productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "product"
+      }, 
+      quantity: Number, 
+      price: Number, 
+      total: Number 
+    },
   ],
-  totalbill: {
+  totalAmount: {
     type: Number,
   },
   status: {
     type: String,
-    enum: ["pending", "confrom", "cancel"],
+    enum: ["pending", "confrom", "shipped", "delivered", "cancel"],
     default: "pending",
+  },
+  trackingId: {
+    type: String,
+    default: ""
+  },
+  courierPartner: {
+    type: String,
+    default: ""
   },
 });
 

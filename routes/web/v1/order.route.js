@@ -9,6 +9,9 @@ router.post("/add", userMiddleware.authUser, orderController.CreateOrder)
 // get order - show history or recent order
 router.get("/all", userMiddleware.authUser, orderController.GetOrder)
 
+// get my orders
+router.get("/my-orders", userMiddleware.authUser, orderController.GetMyOrders)
+
 
 
 // remove Items for Order

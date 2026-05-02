@@ -23,8 +23,10 @@ export const WishlistProvider = ({ children }) => {
     setLoading(true);
     try {
       const res = await API.get('/wishlist/all');
-      // Adjusting to match common backend patterns for wishlist items
-      const items = (res.data.wishlist?.productIds || []).map(p => p.item.productId || p.productId).filter(p => p && typeof p === 'object');
+      // More robust parsing of wishlist items
+      const items = (res.data.wishlist?.productIds || [])
+        .map(p => p?.item?.productId)
+        .filter(p => p && typeof p === 'object');
       setWishlist(items);
     } catch (err) {
       console.error("Fetch wishlist error", err);
@@ -33,12 +35,13 @@ export const WishlistProvider = ({ children }) => {
   };
 
   const addToWishlist = async (product) => {
-    const isExist = wishlist.some(item => (item._id || item) === product._id);
+    // Check existence by ID string to be safe
+    const isExist = wishlist.some(item => (item._id || item).toString() === product._id.toString());
 
     if (!user) {
       let updatedWishlist;
       if (isExist) {
-        updatedWishlist = wishlist.filter(item => (item._id || item) !== product._id);
+        updatedWishlist = wishlist.filter(item => (item._id || item).toString() !== product._id.toString());
         toast.error(`${product.name} removed from registry`, {
           style: { borderRadius: '15px', background: '#fff', color: '#1A1A1A', fontSize: '12px', fontWeight: 'bold' }
         });
@@ -57,7 +60,9 @@ export const WishlistProvider = ({ children }) => {
     try {
       if (isExist) {
         const res = await API.post('/wishlist/remove', { productId: product._id });
-        const items = (res.data.wishlist?.productIds || []).map(p => p.item.productId || p.productId).filter(p => p && typeof p === 'object');
+        const items = (res.data.wishlist?.productIds || [])
+          .map(p => p?.item?.productId)
+          .filter(p => p && typeof p === 'object');
         setWishlist(items);
         toast.error(`${product.name} removed from registry`, {
           style: { borderRadius: '15px', background: '#fff', color: '#1A1A1A', fontSize: '12px', fontWeight: 'bold' }
@@ -66,7 +71,9 @@ export const WishlistProvider = ({ children }) => {
         const res = await API.post('/wishlist/add', { 
           item: { productId: product._id } 
         });
-        const items = (res.data.wishlist?.productIds || []).map(p => p.item.productId || p.productId).filter(p => p && typeof p === 'object');
+        const items = (res.data.wishlist?.productIds || [])
+          .map(p => p?.item?.productId)
+          .filter(p => p && typeof p === 'object');
         setWishlist(items);
         toast.success(`${product.name} added to registry!`, {
           icon: '❤️',
@@ -81,7 +88,7 @@ export const WishlistProvider = ({ children }) => {
 
   const removeFromWishlist = async (productId) => {
     if (!user) {
-      const updatedWishlist = wishlist.filter(item => (item._id || item) !== productId);
+      const updatedWishlist = wishlist.filter(item => (item._id || item).toString() !== productId.toString());
       setWishlist(updatedWishlist);
       localStorage.setItem('guestWishlist', JSON.stringify(updatedWishlist));
       toast.error(`Item removed from your registry`, {
@@ -92,7 +99,9 @@ export const WishlistProvider = ({ children }) => {
 
     try {
       const res = await API.post('/wishlist/remove', { productId });
-      const items = (res.data.wishlist?.productIds || []).map(p => p.item.productId || p.productId).filter(p => p && typeof p === 'object');
+      const items = (res.data.wishlist?.productIds || [])
+        .map(p => p?.item?.productId)
+        .filter(p => p && typeof p === 'object');
       setWishlist(items);
       toast.error(`Item removed from your registry`, {
         style: { borderRadius: '15px', background: '#fff', color: '#1A1A1A', fontSize: '12px', fontWeight: 'bold' }
@@ -103,7 +112,7 @@ export const WishlistProvider = ({ children }) => {
   };
 
   const isInWishlist = (productId) => {
-    return wishlist.some(item => item._id === productId);
+    return wishlist.some(item => (item._id || item).toString() === productId.toString());
   };
 
   return (

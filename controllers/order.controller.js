@@ -29,9 +29,17 @@ module.exports.GetOrder = async (req, res) => {
 
     if (!order) return res.status(404).json({ message: "Order Not Found !!" });
 
-    return res
-      .status(200)
-      .json({ message: "Order Featch Successfully", order });
+    return res.status(200).json({ message: "Order Fetched Successfully", order });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+module.exports.GetMyOrders = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const orders = await orderService.GetMyOrders(userId);
+    return res.status(200).json({ message: "Orders fetched successfully", orders });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }

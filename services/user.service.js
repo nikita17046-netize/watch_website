@@ -17,10 +17,10 @@ module.exports.createUser = async ({ username, email, password, role }) => {
 };
 
 // update data
-module.exports.updateUser = async ({ userId, username, email }) => {
+module.exports.updateUser = async ({ userId, username, email, address }) => {
   const updatedUser = await userModel.findOneAndUpdate(
     { _id: userId },
-    { username, email },
+    { username, email, address },
     { new: true },
   );
 
@@ -98,4 +98,21 @@ module.exports.resetPassword = async ({ token, newPassword }) => {
   user.resetToken = undefined;
   user.resetTokenExpiry = undefined;
   await user.save();
+};
+// change password
+module.exports.changePassword = async ({ userId, oldPassword, newPassword }) => {
+  const user = await userModel.findById(userId).select("+password");
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const isMatch = await user.comparePassword(oldPassword);
+  if (!isMatch) {
+    throw new Error("Old password is incorrect");
+  }
+
+  const hashPassword = await userModel.hashPassword(newPassword);
+  user.password = hashPassword;
+  await user.save();
+  return user;
 };

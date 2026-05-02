@@ -56,9 +56,11 @@ module.exports.RemoveItem = async (req, res) => {
 
     await cartService.RemoveSingleProduct({ userId, productId });
 
+    const updatedCart = await cartService.GetCart(userId);
+
     return res
       .status(200)
-      .json({ message: "Remove Item from Cart Sucessfully " });
+      .json({ message: "Remove Item from Cart Successfully", cart: updatedCart });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }

@@ -38,8 +38,11 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const res = await API.post('/user/login', { email, password });
     localStorage.setItem('token', res.data.token);
-    localStorage.setItem('user', JSON.stringify(res.data.user));
-    setUser(res.data.user);
+    // Backend returns 'checkUser' in login, 'user' in profile/register. 
+    // We normalize it here.
+    const userData = res.data.checkUser || res.data.user;
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
     return res.data;
   };
 

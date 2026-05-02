@@ -22,8 +22,19 @@ module.exports.GetDashboardStats = async (req, res) => {
         
         const averageOrderValue = totalOrders > 0 ? (totalRevenue / totalOrders) : 0;
 
-        // Sales for last 7 days
-        const salesData = await orderModel.aggregate([
+        // Sales for last 7 days (including empty days)
+        const days = [];
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            days.push({
+                _id: date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
+                total: 0,
+                date: date
+            });
+        }
+
+        const actualSales = await orderModel.aggregate([
             {
                 $match: {
                     createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 7)) }
@@ -32,12 +43,15 @@ module.exports.GetDashboardStats = async (req, res) => {
             {
                 $group: {
                     _id: { $dateToString: { format: "%d %b", date: "$createdAt" } },
-                    total: { $sum: "$totalAmount" },
-                    date: { $first: "$createdAt" }
+                    total: { $sum: "$totalAmount" }
                 }
-            },
-            { $sort: { date: 1 } }
+            }
         ]);
+
+        const salesData = days.map(day => {
+            const match = actualSales.find(s => s._id === day._id);
+            return match ? { ...day, total: match.total } : day;
+        });
 
         const recentOrders = await orderModel.find()
             .sort({ createdAt: -1 })
@@ -179,3 +193,30 @@ module.exports.DeleteFaq = async (req, res) => {
     }
 };
 
+module.exports.GetAllOrders = async (req, res) => {
+    try {
+        const orders = await orderModel.find()
+            .populate('userId', 'username email')
+            .populate('items.productId')
+            .sort({ createdAt: -1 });
+        res.status(200).json({ message: "Orders fetched successfully", orders });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+module.exports.UpdateOrderStatus = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { status, trackingId, courierPartner } = req.body;
+        
+        const updateData = { status };
+        if (trackingId) updateData.trackingId = trackingId;
+        if (courierPartner) updateData.courierPartner = courierPartner;
+
+        const order = await orderModel.findByIdAndUpdate(orderId, updateData, { new: true });
+        if (!order) return res.status(404).json({ message: "Order not found" });
+        res.status(200).json({ message: `Order status updated to ${status}`, order });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};

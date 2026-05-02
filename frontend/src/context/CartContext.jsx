@@ -61,16 +61,18 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const removeFromCart = async (productId, itemId) => {
+  const removeFromCart = async (productId) => {
     try {
-      const res = await API.post('/cart/remove', { productId, itemId });
+      const res = await API.delete(`/cart/product/${productId}`);
       const mappedItems = (res.data.cart.items || []).map(item => ({
         ...item,
         product: item.productId
       }));
       setCart(mappedItems);
+      toast.success('Registry updated successfully');
     } catch (err) {
       console.error("Remove from cart error", err);
+      toast.error('Unable to remove item from registry');
     }
   };
 

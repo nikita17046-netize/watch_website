@@ -50,16 +50,41 @@ const AdminPanel = () => {
   const [isFaqModalOpen, setIsFaqModalOpen] = useState(false);
   const [editingFaq, setEditingFaq] = useState(null);
   const [newFaq, setNewFaq] = useState({ question: '', answer: '', category: 'General', order: 0 });
-
+  const [trackingForm, setTrackingForm] = useState({ trackingId: '', courierPartner: 'BlueDart' });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isBulkPriceModalOpen, setIsBulkPriceModalOpen] = useState(false);
 
   const categories = ['All', 'New Arrivals', 'Rolex', 'Titan', ...new Set(products?.map(p => p?.category).filter(Boolean))];
 
   const filteredProducts = products?.filter(p => {
-    if (selectedCategory === 'All') return true;
-    if (selectedCategory === 'New Arrivals') return p?.isNewProduct;
-    if (selectedCategory === 'Rolex') return p?.brand === 'Rolex';
-    if (selectedCategory === 'Titan') return p?.brand === 'Titan';
-    return p?.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'All' || 
+      (selectedCategory === 'New Arrivals' && p?.isNewProduct) ||
+      (selectedCategory === 'Rolex' && p?.brand === 'Rolex') ||
+      (selectedCategory === 'Titan' && p?.brand === 'Titan') ||
+      p?.category === selectedCategory;
+    
+    const matchesSearch = !searchTerm || 
+      p?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      p?.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p?.sku?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    return matchesCategory && matchesSearch;
+  }) || [];
+
+  const filteredOrders = orders?.filter(o => {
+    const term = searchTerm.toLowerCase();
+    return !searchTerm || 
+      o._id?.toLowerCase().includes(term) || 
+      o.userId?.username?.toLowerCase().includes(term) ||
+      o.trackingId?.toLowerCase().includes(term);
+  }) || [];
+
+  const filteredUsers = (Array.isArray(users) ? users : [])?.filter(u => {
+    const term = searchTerm.toLowerCase();
+    return !searchTerm || 
+      u.username?.toLowerCase().includes(term) || 
+      u.email?.toLowerCase().includes(term);
   }) || [];
 
   const formatPrice = (price) => {
@@ -86,10 +111,10 @@ const AdminPanel = () => {
         setOrders(res.data.orders || []);
       } else if (activeTab === 'clients') {
         const res = await API.get('/admin/users');
-        setUsers(res.data || []);
+        setUsers(res.data.users || res.data || []);
       } else if (activeTab === 'faqs') {
         const res = await API.get('/admin/faqs');
-        setFaqs(res.data || []);
+        setFaqs(Array.isArray(res.data) ? res.data : (res.data.faqs || []));
       }
 
     } catch (err) {
@@ -107,9 +132,14 @@ const AdminPanel = () => {
 
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
     try {
-      await API.post(`/admin/orders/status/${orderId}`, { status: newStatus });
+      const payload = { status: newStatus };
+      if (newStatus === 'shipped') {
+        payload.trackingId = trackingForm.trackingId;
+        payload.courierPartner = trackingForm.courierPartner;
+      }
+      await API.post(`/admin/orders/status/${orderId}`, payload);
       toast.success(`Order status migrated to ${newStatus}`);
-      if (selectedOrder) setSelectedOrder({...selectedOrder, status: newStatus});
+      if (selectedOrder) setSelectedOrder({...selectedOrder, ...payload});
       fetchAllData();
     } catch (err) {
       toast.error("Authorization check failed");
@@ -190,10 +220,10 @@ const AdminPanel = () => {
 
 
   return (
-    <div className="min-h-screen flex font-inter bg-[#F9FAFB]">
+    <div className={`min-h-screen flex font-inter transition-colors duration-500 ${isDarkMode ? 'bg-[#0F1115] text-white' : 'bg-[#F9FAFB] text-slate-800'}`}>
       
       {/* SIDEBAR */}
-      <aside className="w-72 flex flex-col fixed h-screen z-50 shadow-sm border-r border-slate-200 bg-[#1C2536]">
+      <aside className={`w-72 flex flex-col fixed h-screen z-50 shadow-sm border-r transition-colors duration-500 ${isDarkMode ? 'border-white/5 bg-[#0A0C10]' : 'border-slate-200 bg-[#1C2536]'}`}>
         <div className="p-8">
            <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -208,24 +238,36 @@ const AdminPanel = () => {
         
         <nav className="flex-grow p-4 space-y-1">
            {[
-             { id: 'dashboard', label: 'Command Center', icon: LayoutDashboard },
-             { id: 'inventory', label: 'Inventory Registry', icon: Package },
-             { id: 'orders', label: 'Logistics Hub', icon: ShoppingBag },
-             { id: 'clients', label: 'User Panel', icon: Users },
+             { id: 'dashboard', label: 'Command Center', icon: LayoutDashboard, link: '/admin' },
+             { id: 'inventory', label: 'Inventory Registry', icon: Package, link: null },
+             { id: 'orders', label: 'Fulfillment Desk', icon: ShoppingBag, link: null },
+             { id: 'logistics', label: 'Logistics Hub', icon: Truck, link: '/logistics', special: true },
+             { id: 'clients', label: 'User Panel', icon: Users, link: null },
              { id: 'coupons', label: 'Offer Terminal', icon: Ticket },
              { id: 'faqs', label: 'FAQ Manager', icon: FileText },
              { id: 'support', label: 'Support Desk', icon: MessageSquare },
              { id: 'settings', label: 'Configuration', icon: Settings },
 
            ].map((item) => (
-             <button 
-               key={item.id} 
-               onClick={() => setActiveTab(item.id)}
-               className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-200 ${activeTab === item.id ? 'text-emerald-400 bg-white/5 border-l-4 border-emerald-400 pl-3' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
-             >
-               <item.icon size={18} />
-               {item.label}
-             </button>
+             item.link ? (
+                <Link 
+                  key={item.id} 
+                  to={item.link}
+                  className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-200 ${item.special ? 'text-indigo-400 border-l-4 border-indigo-500 bg-indigo-500/5' : activeTab === item.id ? 'text-emerald-400 bg-white/5 border-l-4 border-emerald-400 pl-3' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
+                >
+                  <item.icon size={18} />
+                  {item.label}
+                </Link>
+             ) : (
+               <button 
+                 key={item.id} 
+                 onClick={() => setActiveTab(item.id)}
+                 className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-200 ${activeTab === item.id ? 'text-emerald-400 bg-white/5 border-l-4 border-emerald-400 pl-3' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
+               >
+                 <item.icon size={18} />
+                 {item.label}
+               </button>
+             )
            ))}
         </nav>
 
@@ -241,29 +283,50 @@ const AdminPanel = () => {
 
       {/* MAIN CONTENT */}
       <main className="flex-grow ml-72">
-        <header className="h-16 px-8 flex items-center justify-between sticky top-0 z-40 bg-white border-b border-slate-200">
-           <div className="flex items-center gap-4">
-              <Search size={18} className="text-slate-400" />
-              <input type="text" placeholder="Search registries..." className="bg-transparent border-none text-sm focus:ring-0 outline-none w-64 font-medium" />
+        <header className={`h-16 px-8 flex items-center justify-between sticky top-0 z-40 transition-colors duration-500 ${isDarkMode ? 'bg-[#0F1115]/80 backdrop-blur-md border-b border-white/5' : 'bg-white border-b border-slate-200'}`}>
+           <div className="flex items-center gap-4 group">
+               <div className="relative flex items-center">
+                  <Search size={16} className={`absolute left-3 transition-colors ${searchTerm ? 'text-indigo-500' : 'text-slate-400 group-focus-within:text-indigo-500'}`} />
+                  <input 
+                     type="text" 
+                     placeholder="Global search across all registries..." 
+                     value={searchTerm}
+                     onChange={(e) => setSearchTerm(e.target.value)}
+                     className={`text-[11px] font-bold rounded-xl py-2.5 pl-10 pr-4 focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-200 outline-none w-80 transition-all placeholder:text-slate-400 placeholder:font-medium ${isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-100 text-slate-800'}`} 
+                  />
+                  {searchTerm && (
+                     <button onClick={() => setSearchTerm("")} className="absolute right-3 text-slate-300 hover:text-slate-500"><X size={14} /></button>
+                  )}
+               </div>
            </div>
            
            <div className="flex items-center gap-4">
-              <button onClick={() => fetchAllData()} className="text-slate-500 hover:bg-slate-100 p-2 rounded-full transition-all active:rotate-180">
-                 <RefreshCcw size={18} />
-              </button>
-              <button className="text-slate-500 hover:bg-slate-100 p-2 rounded-full relative">
-                 <Bell size={20} />
-                 <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-indigo-500 rounded-full border-2 border-white"></span>
-              </button>
-              <div className="flex items-center gap-3 ml-4 border-l border-slate-100 pl-4">
-                 <div className="text-right">
-                    <p className="text-[10px] font-black text-slate-800 leading-tight">ADMINISTRATOR</p>
-                    <p className="text-[9px] text-emerald-500 font-black">SYSTEM LIVE</p>
-                 </div>
-                 <div className="w-9 h-9 bg-indigo-100 rounded-xl flex items-center justify-center border border-indigo-200 overflow-hidden shadow-sm">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" alt="avatar" />
-                 </div>
-              </div>
+               <div className="flex items-center gap-2 mr-4 border-r border-white/10 pr-6">
+                  {/* Theme Toggle */}
+                  <button 
+                     onClick={() => setIsDarkMode(!isDarkMode)}
+                     className={`p-2.5 rounded-xl border transition-all duration-300 flex items-center gap-2 ${isDarkMode ? 'bg-white/5 border-white/10 text-amber-400 hover:bg-white/10' : 'bg-slate-50 border-slate-100 text-indigo-600 hover:bg-indigo-50'}`}
+                  >
+                     {isDarkMode ? <motion.div animate={{ rotate: 360 }} transition={{ duration: 0.5 }}><Zap size={18} /></motion.div> : <motion.div animate={{ rotate: 0 }}><Compass size={18} /></motion.div>}
+                     <span className="text-[9px] font-black uppercase tracking-widest">{isDarkMode ? 'Night Vision' : 'Daylight'}</span>
+                  </button>
+                  
+                  <Link to="/logistics" className="flex items-center gap-3 group ml-2">
+                     <div className={`w-8 h-8 flex items-center justify-center rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm ${isDarkMode ? 'bg-white/5 text-indigo-400 border border-white/5' : 'bg-indigo-50 text-indigo-600'}`}>
+                        <Truck size={16} />
+                     </div>
+                  </Link>
+               </div>
+
+               <div className={`flex items-center gap-3 ml-4 border-l pl-4 ${isDarkMode ? 'border-white/10' : 'border-slate-100'}`}>
+                  <div className="text-right">
+                     <p className={`text-[10px] font-black leading-tight uppercase tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Chief Administrator</p>
+                     <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Operational Hub</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-2xl bg-indigo-100 flex items-center justify-center border-2 border-white shadow-md overflow-hidden group hover:scale-105 transition-all cursor-pointer">
+                     <img src={`https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff&bold=true`} alt="" />
+                  </div>
+               </div>
            </div>
         </header>
 
@@ -295,12 +358,34 @@ const AdminPanel = () => {
                             { label: 'ACTIVE INVENTORY', value: products?.length || 0, icon: Package, color: "bg-blue-500" },
                             { label: 'AVG ORDER VALUE', value: `₹${formatPrice(stats?.totalOrders > 0 ? stats.totalRevenue / stats.totalOrders : 0)}`, icon: Layers, color: "bg-amber-500" },
                           ].map((stat, i) => (
-                             <div key={i} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all">
+                             <div key={i} className={`p-6 rounded-[2rem] border transition-all duration-300 ${isDarkMode ? 'bg-white/5 border-white/5 hover:bg-white/[0.08]' : 'bg-white border-slate-100 shadow-sm hover:shadow-xl'}`}>
                                 <div className={`w-12 h-12 ${stat.color} rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg`}>
                                    <stat.icon size={24} />
                                 </div>
                                 <h3 className="text-slate-400 text-[10px] font-black tracking-widest uppercase mb-1">{stat.label}</h3>
-                                <p className="text-2xl font-black text-slate-800 tracking-tight">{stat.value}</p>
+                                <p className={`text-2xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{stat.value}</p>
+                             </div>
+                          ))}
+                       </div>
+
+                       {/* STRATEGIC FEATURE HUB */}
+                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                          {[
+                            { label: 'Inventory Alert', value: '2 Rare Assets', sub: 'Low Stock Protocol', icon: AlertTriangle, color: "text-amber-500", bg: "bg-amber-500/10", action: () => setActiveTab('inventory') },
+                            { label: 'Market Demand', value: 'Rolex Day-Date', sub: 'Most Wishlisted', icon: Flame, color: "text-orange-500", bg: "bg-orange-500/10", action: () => { setActiveTab('inventory'); toast.success('Market Pulse: Rolex is Trending'); } },
+                            { label: 'Global Pricing', value: 'Valuation Active', sub: 'Bulk Price Modifier', icon: DollarSign, color: "text-indigo-500", bg: "bg-indigo-500/10", action: () => setIsBulkPriceModalOpen(true) },
+                            { label: 'Billing Terminal', value: 'Ready to Sync', sub: 'PDF Invoice Generator', icon: FileText, color: "text-emerald-500", bg: "bg-emerald-500/10", action: () => setActiveTab('orders') },
+                          ].map((feature, i) => (
+                             <div key={i} onClick={feature.action} className={`p-6 rounded-[2.5rem] border group cursor-pointer transition-all duration-500 ${isDarkMode ? 'bg-white/5 border-white/5 hover:bg-indigo-500/10 hover:border-indigo-500/20' : 'bg-white border-slate-100 hover:border-indigo-100 hover:shadow-2xl hover:shadow-indigo-500/10'}`}>
+                                <div className="flex justify-between items-start mb-6">
+                                   <div className={`w-12 h-12 ${feature.bg} ${feature.color} rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 group-hover:rotate-6`}>
+                                      <feature.icon size={22} />
+                                   </div>
+                                   <div className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${isDarkMode ? 'bg-white/10 text-white/40' : 'bg-slate-50 text-slate-400'}`}>Strategic</div>
+                                </div>
+                                <h4 className="text-slate-400 text-[10px] font-black tracking-widest uppercase mb-1">{feature.label}</h4>
+                                <p className={`text-lg font-black tracking-tight mb-1 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{feature.value}</p>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{feature.sub}</p>
                              </div>
                           ))}
                        </div>
@@ -485,7 +570,7 @@ const AdminPanel = () => {
                                 <tr><th className="p-8 pl-12">Client Profile</th><th className="p-8">Contact Channel</th><th className="p-8">Join Date</th><th className="p-8">Protocol Status</th><th className="p-8 text-center pr-12">Action</th></tr>
                              </thead>
                              <tbody className="divide-y divide-slate-50">
-                                {users.length > 0 ? users.map((u) => (
+                                {filteredUsers.length > 0 ? filteredUsers.map((u) => (
                                    <tr key={u?._id} className="hover:bg-slate-50/50 group">
                                       <td className="p-8 pl-12">
                                          <div className="flex items-center gap-4">
@@ -604,7 +689,7 @@ const AdminPanel = () => {
                              <tr><th className="p-8 pl-12">Registry ID</th><th className="p-8">Consignee</th><th className="p-8">Valuation</th><th className="p-8">Status</th><th className="p-8 text-center pr-12">Action</th></tr>
                           </thead>
                           <tbody className="divide-y divide-slate-50">
-                             {orders?.length > 0 ? orders.map((o) => (
+                             {filteredOrders?.length > 0 ? filteredOrders.map((o) => (
                                <tr key={o?._id} className="hover:bg-slate-50/50 group">
                                   <td className="p-8 pl-12 font-mono text-[11px] text-slate-400">#{o?._id?.slice(-12).toUpperCase()}</td>
                                   <td className="p-8"><p className="text-xs font-black text-slate-800 uppercase tracking-tight">{o?.userId?.username || 'GUEST'}</p><p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-widest">{o?.userId?.email}</p></td>
@@ -890,10 +975,83 @@ const AdminPanel = () => {
                      </div>
                      <div className="mt-8 pt-8 border-t border-slate-50">
                         <div className="flex justify-between items-center mb-6"><div><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol Valuation</p><p className="text-2xl font-black text-indigo-600 tracking-tighter">₹{formatPrice(selectedOrder.totalAmount)}</p></div>
-                           <div className="flex gap-2">
-                              {['Pending', 'Delivered', 'Cancelled'].map((status) => (
-                                 <button key={status} onClick={() => handleUpdateOrderStatus(selectedOrder._id, status)} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${selectedOrder.status === status ? 'bg-slate-900 text-white border-slate-900 shadow-xl' : 'bg-white text-slate-400 border-slate-100 hover:border-indigo-100'}`}>{status}</button>
-                              ))}
+                           <div className="flex flex-col gap-4">
+                              {selectedOrder.status === 'pending' ? (
+                                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                    <div className="flex gap-4">
+                                       <div className="flex-1 relative group">
+                                          <input 
+                                             type="text" 
+                                             placeholder="Enter Third-Party Tracking ID..." 
+                                             value={trackingForm.trackingId} 
+                                             onChange={e => setTrackingForm({...trackingForm, trackingId: e.target.value})} 
+                                             className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold outline-none focus:border-indigo-300 transition-all shadow-inner" 
+                                          />
+                                          <button 
+                                             onClick={() => {
+                                                const id = `LX${Math.random().toString(36).substring(2, 8).toUpperCase()}${Date.now().toString().slice(-4)}`;
+                                                setTrackingForm({...trackingForm, trackingId: id});
+                                             }}
+                                             className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-white border border-slate-200 rounded-lg text-[8px] font-black uppercase text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                                          >
+                                             Generate ID
+                                          </button>
+                                       </div>
+                                       <select 
+                                          value={trackingForm.courierPartner} 
+                                          onChange={e => setTrackingForm({...trackingForm, courierPartner: e.target.value})} 
+                                          className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-black uppercase tracking-widest outline-none focus:border-indigo-300 transition-all shadow-sm"
+                                       >
+                                          <option>BlueDart</option><option>Delhivery</option><option>DHL</option><option>FedEx</option>
+                                       </select>
+                                    </div>
+                                    {!trackingForm.trackingId && (
+                                       <p className="text-[10px] text-amber-500 font-bold uppercase tracking-widest animate-pulse">Prerequisite: Please enter or generate a Tracking ID to authorize dispatch</p>
+                                    )}
+                                    <button 
+                                       onClick={() => handleUpdateOrderStatus(selectedOrder._id, 'shipped')}
+                                       disabled={!trackingForm.trackingId}
+                                       className={`w-full py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 ${trackingForm.trackingId ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-95' : 'bg-slate-50 text-slate-300 cursor-not-allowed border border-slate-100'}`}
+                                    >
+                                       <Truck size={18} />
+                                       {trackingForm.trackingId ? 'Authorize Dispatch & Move to Hub' : 'Awaiting Tracking Protocol'}
+                                    </button>
+                                    <button onClick={() => handleUpdateOrderStatus(selectedOrder._id, 'cancelled')} className="w-full py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">Cancel Acquisition</button>
+                                 </div>
+                              ) : (
+                                 <div className="flex flex-col gap-4">
+                                    <div className="flex gap-2">
+                                       {['Shipped', 'Cancelled'].map((status) => (
+                                          <button key={status} onClick={() => handleUpdateOrderStatus(selectedOrder._id, status.toLowerCase())} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${selectedOrder.status === status.toLowerCase() ? 'bg-slate-900 text-white border-slate-900 shadow-xl' : 'bg-white text-slate-400 border-slate-100 hover:border-indigo-100'}`}>{status}</button>
+                                       ))}
+                                    </div>
+                                    {selectedOrder.status === 'shipped' && (
+                                       <div className="space-y-4">
+                                          {!selectedOrder.trackingId ? (
+                                             <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 space-y-3">
+                                                <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest flex items-center gap-2"><AlertCircle size={14} /> Tracking Protocol Missing</p>
+                                                <div className="flex gap-2">
+                                                   <input type="text" placeholder="LX..." value={trackingForm.trackingId} onChange={e => setTrackingForm({...trackingForm, trackingId: e.target.value})} className="flex-1 px-3 py-2 bg-white border border-amber-200 rounded-xl text-[10px] font-bold outline-none" />
+                                                   <button onClick={() => setTrackingForm({...trackingForm, trackingId: `LX${Math.random().toString(36).substring(2, 8).toUpperCase()}${Date.now().toString().slice(-4)}`})} className="px-3 py-2 bg-amber-600 text-white text-[9px] font-black uppercase rounded-xl">Auto-Gen</button>
+                                                   <button onClick={() => handleUpdateOrderStatus(selectedOrder._id, 'shipped')} className="px-3 py-2 bg-slate-900 text-white text-[9px] font-black uppercase rounded-xl">Fix Link</button>
+                                                </div>
+                                             </div>
+                                          ) : (
+                                             <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between">
+                                                <div>
+                                                   <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Active Logistics Link</p>
+                                                   <p className="text-xs font-black text-indigo-600 uppercase tracking-tight">{selectedOrder.trackingId}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                   <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Partner</p>
+                                                   <p className="text-xs font-black text-indigo-600 uppercase tracking-tight">{selectedOrder.courierPartner}</p>
+                                                </div>
+                                             </div>
+                                          )}
+                                       </div>
+                                    )}
+                                 </div>
+                              )}
                            </div>
                         </div>
                         <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center gap-4 text-emerald-700"><Truck size={20} /><p className="text-[10px] font-black uppercase tracking-widest">Protocol Status: {selectedOrder.status} - Shipment Authorized</p></div>
@@ -901,6 +1059,53 @@ const AdminPanel = () => {
                   </div>
                </div>
             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* BULK PRICE MODIFIER MODAL */}
+      <AnimatePresence>
+        {isBulkPriceModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsBulkPriceModalOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+             <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className={`relative w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden border transition-colors duration-500 ${isDarkMode ? 'bg-[#1A1D23] border-white/10' : 'bg-white border-slate-100'}`}
+             >
+                <div className="p-10">
+                   <div className="flex justify-between items-start mb-8">
+                      <div>
+                         <h2 className={`text-2xl font-black tracking-tight uppercase italic ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Global Valuation</h2>
+                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Bulk Price Modifier Terminal</p>
+                      </div>
+                      <button onClick={() => setIsBulkPriceModalOpen(false)} className={`p-3 rounded-2xl transition-all ${isDarkMode ? 'bg-white/5 text-white/40 hover:text-white' : 'bg-slate-50 text-slate-400 hover:text-slate-600'}`}><X size={20} /></button>
+                   </div>
+
+                   <div className="space-y-6">
+                      <div className={`p-6 rounded-3xl border ${isDarkMode ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-indigo-50/50 border-indigo-50'}`}>
+                         <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest mb-4">Select Target Brand</p>
+                         <div className="grid grid-cols-2 gap-3">
+                            {['Rolex', 'Titan', 'Omega', 'Casio'].map(brand => (
+                               <button key={brand} className={`px-4 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest border transition-all ${brand === 'Rolex' ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/20' : isDarkMode ? 'bg-white/5 border-white/5 text-white/40 hover:border-indigo-500/40' : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-200'}`}>{brand}</button>
+                            ))}
+                         </div>
+                      </div>
+
+                      <div className="space-y-3">
+                         <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Adjust Valuation (%)</p>
+                         <div className="flex items-center gap-4">
+                            <button className={`w-14 h-14 rounded-2xl border flex items-center justify-center text-xl font-black transition-all ${isDarkMode ? 'border-white/5 text-white/20 hover:bg-white/5' : 'border-slate-100 text-slate-400 hover:bg-slate-50'}`}>-</button>
+                            <div className={`flex-1 rounded-2xl py-4 text-center ${isDarkMode ? 'bg-white/5' : 'bg-slate-50'}`}>
+                               <span className={`text-2xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>+5%</span>
+                            </div>
+                            <button className={`w-14 h-14 rounded-2xl border flex items-center justify-center text-xl font-black transition-all ${isDarkMode ? 'border-white/5 text-white/20 hover:bg-white/5' : 'border-slate-100 text-slate-400 hover:bg-slate-50'}`}>+</button>
+                         </div>
+                      </div>
+
+                      <button onClick={() => { toast.success('Global Price Adjustment AUTHORIZED'); setIsBulkPriceModalOpen(false); }} className={`w-full py-5 rounded-3xl text-[11px] font-black uppercase tracking-[0.3em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all mt-4 ${isDarkMode ? 'bg-indigo-600 text-white shadow-indigo-500/20' : 'bg-slate-900 text-white shadow-slate-900/20'}`}>Execute Price Modification</button>
+                   </div>
+                </div>
+             </motion.div>
           </div>
         )}
       </AnimatePresence>

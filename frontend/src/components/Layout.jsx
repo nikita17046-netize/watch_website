@@ -5,12 +5,20 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import FAQSection from './FAQSection';
+import GlobalReviews from './GlobalReviews';
 
 const Navbar = () => {
   const { cartCount } = useCart();
   const { wishlist } = useWishlist();
-  const { user } = useAuth();
+  const { user, loading, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-[100] bg-white shadow-sm border-b border-gray-100">
@@ -46,16 +54,63 @@ const Navbar = () => {
 
         {/* Right Side: Essential Actions with Labels */}
         <div className="flex items-center gap-6 lg:gap-10 flex-shrink-0">
-          {/* Account */}
-          <Link to={user ? (user.role === 'admin' ? '/admin' : '/profile') : '/login'} className="flex flex-col items-center gap-1.5 group transition-colors">
-            <div className="relative">
-               <User size={22} className="text-gray-700 group-hover:text-black transition-colors" />
-               {user && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>}
-            </div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-black">
-               {user ? 'Account' : 'Login'}
-            </span>
-          </Link>
+          {/* Account Dropdown */}
+          <div className="relative group/account flex flex-col items-center gap-1.5 cursor-pointer">
+            {loading ? (
+              <div className="flex flex-col items-center gap-1.5 animate-pulse">
+                <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+                <div className="w-8 h-2 bg-gray-100 rounded"></div>
+              </div>
+            ) : user ? (
+              <div className="flex flex-col items-center gap-1.5 group transition-colors">
+                <div className="relative">
+                   <User size={22} className="text-gray-700 group-hover:text-black transition-colors" />
+                   <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-black">
+                   Account
+                </span>
+              </div>
+            ) : (
+              <Link to="/login" className="flex flex-col items-center gap-1.5 group transition-colors">
+                <User size={22} className="text-gray-700 group-hover:text-black transition-colors" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-black">
+                   Login
+                </span>
+              </Link>
+            )}
+
+            {/* Dropdown Menu */}
+            {user && (
+              <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-100 shadow-2xl rounded-2xl py-3 opacity-0 invisible group-hover/account:opacity-100 group-hover/account:visible transition-all duration-300 z-[110] transform origin-top scale-95 group-hover/account:scale-100">
+                <div className="px-4 py-2 border-b border-gray-50 mb-2">
+                   <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Greetings,</p>
+                   <p className="text-[11px] font-black text-black uppercase truncate">{user.username}</p>
+                </div>
+                
+                <Link 
+                  to={user.role === 'admin' ? '/admin' : '/profile'} 
+                  className="flex items-center gap-3 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-gray-600 hover:text-[#D4AF37] hover:bg-gray-50 transition-all"
+                >
+                  <MapPin size={14} /> My Dashboard
+                </Link>
+                
+                <Link 
+                  to="/wishlist" 
+                  className="flex items-center gap-3 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-gray-600 hover:text-[#D4AF37] hover:bg-gray-50 transition-all"
+                >
+                  <Heart size={14} /> My Registry
+                </Link>
+
+                <button 
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all border-t border-gray-50 mt-2"
+                >
+                  <LogOut size={14} /> Sign Out
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Wishlist */}
           <Link to="/wishlist" className="flex flex-col items-center gap-1.5 group transition-colors">
@@ -99,16 +154,21 @@ const Navbar = () => {
             { label: 'Titan Edge', path: '/products?brand=Titan' },
             { label: 'Men', path: '/products?category=Men' },
             { label: 'Women', path: '/products?category=Women' },
-            { label: 'New Arrivals', path: '/products?sort=newest', highlight: true },
+            { label: 'New Arrivals', path: '/products?sort=newest', highlight: false },
             { label: 'Special Offers', path: '/products?sale=true', highlight: true },
+            { label: 'Concierge FAQ', path: '/faq', highlight: false },
           ].map((cat) => (
             <Link
               key={cat.label}
               to={cat.path}
-              className={`text-[11px] font-bold uppercase tracking-[0.15em] transition-all relative group py-2 ${cat.highlight ? 'text-[#B8860B]' : 'text-gray-500 hover:text-black'}`}
+              className={`text-[11px] font-bold uppercase tracking-[0.15em] transition-all relative group py-2 
+                ${cat.label === 'Special Offers' ? 'px-4 py-1.5 bg-[#D4AF37] text-black rounded-full shadow-lg shadow-[#D4AF37]/20 animate-pulse-gentle' : 
+                  cat.highlight ? 'text-[#B8860B]' : 'text-gray-500 hover:text-black'}`}
             >
               {cat.label}
-              <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] transition-all duration-300 group-hover:w-full ${cat.highlight ? 'bg-[#B8860B]' : 'bg-black'}`}></span>
+              {cat.label !== 'Special Offers' && (
+                <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] transition-all duration-300 group-hover:w-full ${cat.highlight ? 'bg-[#B8860B]' : 'bg-black'}`}></span>
+              )}
             </Link>
           ))}
         </div>
@@ -164,12 +224,14 @@ const Footer = () => {
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const hideLayout = ['/login', '/register'].includes(location.pathname) || location.pathname.startsWith('/admin');
+  const hideLayout = ['/login', '/register', '/profile', '/logistics'].includes(location.pathname) || location.pathname.startsWith('/admin');
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {!hideLayout && <Navbar />}
       <main className={`flex-grow ${!hideLayout ? 'pt-40' : ''}`}>{children}</main>
+      {!hideLayout && <FAQSection />}
+      {!hideLayout && <GlobalReviews />}
       {!hideLayout && <Footer />}
     </div>
   );

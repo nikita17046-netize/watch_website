@@ -69,16 +69,15 @@ module.exports.logout = (req, res) => {
 };
 
 module.exports.updateUser = async (req, res) => {
-  const userId = req.user.id;
-  console.log(userId);
+  const userId = req.user._id;
+  const { username, email, address } = req.body;
 
-  const { username, email } = req.body;
+  const updatedUser = await userService.updateUser({ userId, username, email, address });
 
-  const updateUser = await userService.updateUser({ userId, username, email });
-
-  res
-    .status(200)
-    .json({ message: "User Data Updated Successfully,", updateUser });
+  res.status(200).json({ 
+    message: "User Data Updated Successfully", 
+    user: updatedUser 
+  });
 };
 
 // forget password --> send email for reset password
@@ -106,6 +105,19 @@ module.exports.resetPassword = async (req, res) => {
     await userService.resetPassword({ token, newPassword });
 
     return res.status(200).json({ message: "Password Reset Successfully " });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+// change password
+module.exports.changePassword = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { oldPassword, newPassword } = req.body;
+
+    await userService.changePassword({ userId, oldPassword, newPassword });
+
+    return res.status(200).json({ message: "Password Updated Successfully" });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }

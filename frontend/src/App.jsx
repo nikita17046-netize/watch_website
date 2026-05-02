@@ -22,6 +22,7 @@ import Checkout from './pages/Checkout';
 import MyOrders from './pages/MyOrders';
 import FAQ from './pages/FAQ';
 import Profile from './pages/Profile';
+import LogisticsHub from './pages/LogisticsHub';
 
 
 
@@ -29,7 +30,16 @@ import Profile from './pages/Profile';
 const AdminRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
-  if (!user || user.role !== 'admin') return <Navigate to="/" />;
+  if (!user) return <Navigate to="/login" />;
+  if (user.role !== 'admin') return <Navigate to="/profile" />;
+  return children;
+};
+
+const AdminAutoRedirect = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  // If logged in as admin, always go to admin panel first on root access
+  if (user && user.role === 'admin') return <Navigate to="/admin" />;
   return children;
 };
 
@@ -59,8 +69,12 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
 
-              {/* Public Main Website */}
-              <Route path="/" element={<Home />} />
+              {/* Smart Entry: Redirect Admin to Dashboard, Users to Home */}
+              <Route path="/" element={
+                <AdminAutoRedirect>
+                  <Home />
+                </AdminAutoRedirect>
+              } />
               <Route path="/products" element={<Products />} />
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/offer/:id" element={<OfferProducts />} />
@@ -78,6 +92,11 @@ function App() {
               <Route path="/admin" element={
                 <AdminRoute>
                   <AdminPanel />
+                </AdminRoute>
+              } />
+              <Route path="/logistics" element={
+                <AdminRoute>
+                  <LogisticsHub />
                 </AdminRoute>
               } />
             </Routes>

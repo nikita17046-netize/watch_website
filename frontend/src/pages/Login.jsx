@@ -26,7 +26,8 @@ const Login = () => {
       const data = await login(email, password);
       toast.success('Access Granted. Welcome back.');
       
-      if (data.user?.role === 'admin') {
+      const userData = data.checkUser || data.user;
+      if (userData?.role === 'admin') {
         navigate('/admin');
       } else {
         navigate('/');

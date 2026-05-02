@@ -488,23 +488,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ═══ NEWSLETTER CTA ═══ */}
-      <section className="py-32 bg-[#0F2044] relative overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-[#C9A84C]/10 blur-[100px]" />
-        <div className="container mx-auto px-6 text-center relative z-10">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.9 }}>
-            <span className="text-[#C9A84C] uppercase tracking-[0.6em] text-[10px] font-black mb-6 block">Private Registry</span>
-            <h2 className="text-5xl md:text-6xl font-playfair font-black text-white mb-8">Join the Inner Circle.</h2>
-            <p className="text-white/40 uppercase tracking-widest text-xs font-bold mb-14 max-w-md mx-auto">Exclusive access to limited releases, private sales, and curatorial events.</p>
-            <div className="flex max-w-md mx-auto border-b border-white/20 pb-4 gap-4">
-              <input type="email" placeholder="Your Email Address" className="flex-1 bg-transparent text-white text-[11px] uppercase tracking-widest outline-none placeholder:text-white/30 font-bold" />
-              <button className="text-[#C9A84C] text-[11px] uppercase tracking-[0.3em] font-black hover:text-white transition-colors">
-                Join →
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
 
       {/* Video Modal */}
       {showVideo && <VideoModal onClose={() => setShowVideo(false)} />}

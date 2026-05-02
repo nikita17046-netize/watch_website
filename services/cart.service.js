@@ -7,12 +7,13 @@ module.exports.addToCart = async ({ userId, item }) => {
   if (!cart) cart = new cartModel({ userId, items: [] });
 
   cart.items.push(item);
-  return await cart.save();
+  await cart.save();
+  return await cartModel.findOne({ userId }).populate('items.productId');
 };
 
 // get Cart
 module.exports.GetCart = async (userId) => {
-  return await cartModel.findOne({ userId });
+  return await cartModel.findOne({ userId }).populate('items.productId');
 };
 
 // delete single product from cart
