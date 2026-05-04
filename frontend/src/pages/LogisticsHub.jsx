@@ -148,12 +148,22 @@ const LogisticsHub = () => {
     return matchesSearch && matchesStatus && matchesCompany;
   });
 
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case 'shipped': return 'bg-indigo-50 text-indigo-600 border-indigo-100';
-      case 'delivered': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-      default: return 'bg-amber-50 text-amber-600 border-amber-100';
-    }
+  const StatusBadge = ({ status }) => {
+    const config = {
+      pending: { icon: <Clock size={12} />, bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100', label: 'Pending' },
+      shipped: { icon: <Truck size={12} />, bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-100', label: 'In Transit' },
+      delivered: { icon: <CheckCircle2 size={12} />, bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100', label: 'Delivered' },
+      cancelled: { icon: <AlertCircle size={12} />, bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-100', label: 'Cancelled' },
+    };
+
+    const style = config[status] || config.pending;
+
+    return (
+      <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${style.bg} ${style.text} ${style.border} shadow-sm transition-all hover:scale-105`}>
+        {style.icon}
+        {style.label}
+      </div>
+    );
   };
 
   const menuItems = [
@@ -349,7 +359,7 @@ const LogisticsHub = () => {
                               <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Node Relay</p>
                               <p className="text-[12px] text-[#5D5CDE] font-black uppercase tracking-widest">{o.courierPartner}</p>
                             </div>
-                            <div className={`px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${getStatusStyle(o.status)}`}>{o.status}</div>
+                            <StatusBadge status={o.status} />
                           </div>
                         </div>
                       ))}
@@ -643,7 +653,7 @@ const LogisticsHub = () => {
                           <p className="text-[11px] font-black text-slate-300 uppercase tracking-widest mb-2">Relay Link</p>
                           <p className="text-[16px] font-black text-slate-900 uppercase tracking-[0.1em]">{o.trackingId}</p>
                         </div>
-                        <div className={`px-10 py-4 rounded-full text-[11px] font-black uppercase tracking-widest border ${getStatusStyle(o.status)} shadow-sm`}>{o.status}</div>
+                        <StatusBadge status={o.status} />
                       </div>
                     </motion.div>
                   )) : (

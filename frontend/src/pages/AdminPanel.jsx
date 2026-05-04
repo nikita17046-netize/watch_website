@@ -14,6 +14,42 @@ import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
+const StatusBadge = ({ status, type = 'order' }) => {
+   const config = {
+      order: {
+         Delivered: { icon: <CheckCircle2 size={12} />, color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
+         'delivered': { icon: <CheckCircle2 size={12} />, color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
+         Cancelled: { icon: <AlertCircle size={12} />, color: 'bg-rose-50 text-rose-600 border-rose-100' },
+         'cancelled': { icon: <AlertCircle size={12} />, color: 'bg-rose-50 text-rose-600 border-rose-100' },
+         Pending: { icon: <Clock size={12} />, color: 'bg-amber-50 text-amber-600 border-amber-100' },
+         'pending': { icon: <Clock size={12} />, color: 'bg-amber-50 text-amber-600 border-amber-100' },
+         Shipped: { icon: <Truck size={12} />, color: 'bg-indigo-50 text-indigo-600 border-indigo-100' },
+         'shipped': { icon: <Truck size={12} />, color: 'bg-indigo-50 text-indigo-600 border-indigo-100' },
+         Processing: { icon: <Activity size={12} />, color: 'bg-blue-50 text-blue-600 border-blue-100' },
+         'processing': { icon: <Activity size={12} />, color: 'bg-blue-50 text-blue-600 border-blue-100' },
+      },
+      user: {
+         active: { icon: <UserCheck size={12} />, color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
+         suspended: { icon: <Ban size={12} />, color: 'bg-rose-50 text-rose-600 border-rose-100' },
+      },
+      inventory: {
+         instock: { icon: <Package size={12} />, color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
+         lowstock: { icon: <AlertTriangle size={12} />, color: 'bg-amber-50 text-amber-600 border-amber-100' },
+         outofstock: { icon: <ShieldAlert size={12} />, color: 'bg-rose-50 text-rose-600 border-rose-100' },
+      }
+   };
+
+   const statusMap = config[type] || config.order;
+   const style = statusMap[status] || (type === 'inventory' ? statusMap.instock : statusMap.Pending);
+
+   return (
+      <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${style.color} shadow-sm w-fit`}>
+         {style.icon}
+         {status}
+      </div>
+   );
+};
+
 const AdminPanel = () => {
    const { logout } = useAuth();
    const [activeTab, setActiveTab] = useState('dashboard');
@@ -289,6 +325,7 @@ const AdminPanel = () => {
          toast.error(`FAILED: ${errMsg}`);
       }
    };
+
 
    return (
       <div className={`min-h-screen flex font-inter transition-colors duration-500 ${isDarkMode ? 'bg-[#0F1115] text-white' : 'bg-[#F9FAFB] text-slate-800'}`}>
@@ -736,7 +773,13 @@ const AdminPanel = () => {
                                              </td>
                                              <td className="p-6"><span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase tracking-widest">{p?.category}</span></td>
                                              <td className="p-6 text-sm font-black text-slate-900 tracking-tighter">₹{formatPrice(p?.price)}</td>
-                                             <td className="p-6"><span className={`text-[10px] font-black uppercase ${p?.stock > 10 ? 'text-emerald-500' : 'text-red-500'}`}>{p?.stock} Units</span></td>
+                                             <td className="p-6">
+                                                <StatusBadge 
+                                                   status={p?.stock > 10 ? 'instock' : p?.stock > 0 ? 'lowstock' : 'outofstock'} 
+                                                   type="inventory" 
+                                                />
+                                                <span className="text-[10px] font-black uppercase text-slate-400 mt-1 block">{p?.stock} Units</span>
+                                             </td>
                                              <td className="p-6 text-center pr-10"><div className="flex justify-center gap-3"><button className="w-9 h-9 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-indigo-600 shadow-sm"><Edit size={16} /></button><button className="w-9 h-9 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 shadow-sm"><Trash2 size={16} /></button></div></td>
                                           </tr>
                                        ))}
@@ -803,9 +846,7 @@ const AdminPanel = () => {
                                                       <option value="manager">Manager</option>
                                                       <option value="admin">Administrator</option>
                                                    </select>
-                                                   <span className={`w-fit px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${u?.status === 'suspended' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
-                                                      {u?.status || 'active'}
-                                                   </span>
+                                                   <StatusBadge status={u?.status || 'active'} type="user" />
                                                 </div>
                                              </td>
                                              <td className="p-8 text-center pr-12">
@@ -995,7 +1036,7 @@ const AdminPanel = () => {
                                           <td className="p-8 pl-12 font-mono text-[11px] text-slate-400">#{o?._id?.slice(-12).toUpperCase()}</td>
                                           <td className="p-8"><p className="text-xs font-black text-slate-800 uppercase tracking-tight">{o?.userId?.username || 'GUEST'}</p><p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-widest">{o?.userId?.email}</p></td>
                                           <td className="p-8"><p className={`text-lg font-black tracking-tighter ${o?.totalAmount === 0 ? 'text-red-500' : 'text-slate-900'}`}>₹{formatPrice(o?.totalAmount)}</p>{o?.totalAmount === 0 && <span className="text-[8px] font-black text-red-400 uppercase tracking-widest">Verification Required</span>}</td>
-                                          <td className="p-8"><span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${o?.status === 'Delivered' ? 'status-badge-delivered' : o?.status === 'Cancelled' ? 'status-badge-cancelled' : 'status-badge-pending'}`}>{o?.status}</span></td>
+                                          <td className="p-8"><StatusBadge status={o?.status} /></td>
                                           <td className="p-8 text-center pr-12"><button onClick={() => { setSelectedOrder(o); setIsOrderModalOpen(true); }} className="w-12 h-12 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-slate-300 hover:text-slate-900 shadow-sm group-hover:scale-110 transition-all"><ChevronRight size={20} /></button></td>
                                        </tr>
                                     )) : (
@@ -1039,9 +1080,10 @@ const AdminPanel = () => {
                                           </div>
                                        </div>
                                        <div className="flex items-center gap-6">
-                                          <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${ticket.priority === 'High' ? 'bg-red-50 text-red-500 border border-red-100' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}>
+                                          <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 border ${ticket.priority === 'High' ? 'bg-rose-50 text-rose-600 border-rose-100' : ticket.priority === 'Medium' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-slate-50 text-slate-400 border-slate-100'}`}>
+                                             {ticket.priority === 'High' ? <AlertCircle size={12} /> : ticket.priority === 'Medium' ? <Zap size={12} /> : <Info size={12} />}
                                              {ticket.priority} Priority
-                                          </span>
+                                          </div>
                                           <button
                                              onClick={() => handleResolveTicket(ticket.id)}
                                              className="px-6 py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600 shadow-sm transition-all"
@@ -1377,7 +1419,15 @@ const AdminPanel = () => {
                                        </div>
                                     )}
                                  </div>
-                              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center gap-4 text-emerald-700"><Truck size={20} /><p className="text-[10px] font-black uppercase tracking-widest">Protocol Status: {selectedOrder.status} - Shipment Authorized</p></div>
+                              <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                                 <div className="flex items-center gap-4">
+                                    <StatusBadge status={selectedOrder.status} />
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol Status Updated</p>
+                                 </div>
+                                 <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${selectedOrder.status === 'delivered' ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'}`}>
+                                    {selectedOrder.status === 'delivered' ? 'Shipment Finalized' : 'Logistics Active'}
+                                 </div>
+                              </div>
                            </div>
                         </div>
                      </div>

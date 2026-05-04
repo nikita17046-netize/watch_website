@@ -1,236 +1,312 @@
+/* --------------------------------------------------------------
+   Premium Luxury Theme – Complete & Extended
+   --------------------------------------------------------------
+   Features:
+   • Dark‑mode aware (prefers‑color‑scheme)
+   • Glass‑morphism containers
+   • Gradient premium buttons
+   • Elegant inputs, tables, badges
+   • Hero section, back‑button, shimmer & pulse
+   • Additional UI utilities: cards, sections, grid, footer, modal, tooltip
+   • Consistent typography (Inter, Outfit)
+   -------------------------------------------------------------- */
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ---------- Color Palette ---------- */
 :root {
-  --sidebar-bg: #1C2536;
-  --content-bg: #F9FAFB;
-  --accent-indigo: #6366F1;
-  --success-emerald: #10B981;
-  /* Luxury Palette */
-  --luxury-gold: #C9A84C;
-  --luxury-charcoal: #0F172A;
-  --luxury-sand: #F1F1F1;
-  --luxury-pearl: #FAFAFA;
-  --luxury-navy: #0F2044;
+  /* Light palette */
+  --bg-primary: #ffffff;
+  --bg-secondary: #F9FAFB;
+  --text-primary: #0F172A;   /* Charcoal */
+  --text-secondary: #64748B; /* Slate */
+  --accent: #C9A84C;          /* Luxury gold */
+  --accent-dark: #A68A34;
+  --border: #E2E8F0;
+  --shadow: rgba(0,0,0,0.1);
+  --glass-bg: rgba(255,255,255,0.85);
+  --glass-border: rgba(255,255,255,0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #0F172A;
+    --bg-secondary: #1E293B;
+    --text-primary: #F1F5F9;
+    --text-secondary: #94A3B8;
+    --border: #334155;
+    --shadow: rgba(0,0,0,0.4);
+    --glass-bg: rgba(15,23,42,0.85);
+    --glass-border: rgba(255,255,255,0.15);
+  }
 }
 
 body {
   margin: 0;
   font-family: 'Inter', 'Outfit', sans-serif;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--content-bg);
 }
 
-/* --- THE "BOX" (TABLE) ENHANCEMENTS --- */
-.logistics-table-container {
-  border-radius: 2.5rem;
-  overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  background: white;
+/* ---------- Global Utilities ---------- */
+
+/* Glass‑morphism container */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  padding: 1.5rem;
 }
 
-.table-row-premium {
-  border-bottom: 1px solid rgba(241, 245, 249, 0.5);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.table-row-premium:hover {
-  background: rgba(99, 102, 241, 0.02);
-  transform: translateX(4px);
-  border-left: 4px solid #6366f1;
-}
-
-/* --- GLOWING STATUS BADGES --- */
-.status-badge-pending {
-  background: rgba(99, 102, 241, 0.1);
-  color: #6366f1;
-  box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-}
-
-.status-badge-delivered {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-  box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-.status-badge-cancelled {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  box-shadow: 0 0 15px rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-/* --- PRICE VALUATION FONT --- */
-.valuation-text {
-  font-family: 'Outfit', sans-serif;
-  letter-spacing: -0.02em;
-  font-weight: 800;
-}
-
-/* --- SCROLLBAR --- */
-::-webkit-scrollbar {
-  width: 5px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
-}
-
-/* --- MODAL GLASS EFFECT --- */
-.modal-glass {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #e2e8f0;
-  border-radius: 10px;
-}
-
-/* --- LUXURY UTILITIES --- */
-.premium-card {
-  box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(20px);
-}
-
-.luxury-input {
-  border: none;
-  border-bottom: 1px solid #E2E8F0;
-  padding-top: 1.25rem;
-  padding-bottom: 1.25rem;
-  padding-left: 3.5rem;
-  padding-right: 1rem;
-  background: transparent;
-  width: 100%;
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  font-family: 'Outfit', sans-serif;
-  letter-spacing: 0.15em;
-  font-size: 14px;
-  color: #0F172A;
-}
-
-.luxury-input::placeholder {
-  color: #CBD5E1;
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  font-weight: 500;
-}
-
-.luxury-input:focus {
-  border-color: #C9A84C;
-  outline: none;
-}
-
-.luxury-btn {
-  background: black;
-  color: white;
-  text-transform: uppercase;
-  letter-spacing: 0.4em;
-  font-weight: 900;
-  font-size: 10px;
-  padding: 1.5rem 3rem;
-  border-radius: 0.75rem;
-  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-  position: relative;
-  overflow: hidden;
+/* Premium gradient button */
+.premium-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 0.5rem;
+  padding: 0.75rem 2rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px var(--shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
-.luxury-btn:hover {
-  background: #C9A84C;
+.premium-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(201, 168, 76, 0.3);
+  box-shadow: 0 6px 20px var(--shadow);
 }
 
+/* Shimmer loading placeholder */
 .shimmer {
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
   background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+  animation: shimmer 1.5s infinite;
 }
-
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
+  0%   { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 
-.animate-spin-slow {
-  animation: spin 12s linear infinite;
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* Luxury input fields */
+.luxury-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 0.75rem;
+  border: none;
+  border-bottom: 2px solid var(--border);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.875rem;
+  transition: border-color 0.3s;
+}
+.luxury-input::placeholder {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+.luxury-input:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+/* Table enhancements */
+.logistics-table-container {
+  border-radius: 2rem;
+  overflow: hidden;
+  box-shadow: 0 12px 30px var(--shadow);
+  border: 1px solid var(--border);
+  background: var(--bg-primary);
+}
+.table-row-premium {
+  transition: background-color 0.3s, transform 0.3s;
+}
+.table-row-premium:hover {
+  background: rgba(201,168,76,0.08);
+  transform: translateX(4px);
+  border-left: 4px solid var(--accent);
 }
 
+/* Status badges */
+.status-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.status-badge-pending   { background: rgba(99,102,241,0.1);  color: #6366f1; }
+.status-badge-delivered { background: rgba(16,185,129,0.1); color: #10b981; }
+.status-badge-cancelled { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+/* Hero section */
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--accent) 0%, transparent 70%);
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+/* Back button component */
 .back-btn-box {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  background: white;
-  padding: 8px 24px 8px 8px;
-  border-radius: 100px;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-  transition: all 0.4s ease;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 2rem;
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: transform 0.2s, border-color 0.2s;
 }
-
 .back-btn-box:hover {
-  border-color: #C9A84C;
-  transform: translateX(-5px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  border-color: var(--accent);
+  transform: translateX(-4px);
 }
-
 .back-btn-box .icon-container {
-  width: 32px;
-  height: 32px;
-  background: #0F172A;
-  color: white;
+  width: 2rem;
+  height: 2rem;
+  background: var(--text-primary);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: all 0.4s ease;
+  transition: background 0.2s;
 }
-
-.back-btn-box:hover .icon-container {
-  background: #C9A84C;
-}
-
+.back-btn-box:hover .icon-container { background: var(--accent); }
 .back-btn-box span {
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: #64748B;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
 }
+.back-btn-box:hover span { color: var(--text-primary); }
 
-.back-btn-box:hover span {
-  color: #0F172A;
-}
-
-@keyframes pulse-gentle {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.9; transform: scale(1.03); }
-}
-
+/* Gentle pulse animation */
 .animate-pulse-gentle {
   animation: pulse-gentle 2s infinite ease-in-out;
 }
+@keyframes pulse-gentle {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:0.9; transform:scale(1.03); }
+}
+
+/* Links */
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+a:hover { color: var(--accent-dark); }
+
+/* ---------- Additional UI Components ---------- */
+
+/* Card component – glass‑style */
+.card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(12px);
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px var(--shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px var(--shadow);
+}
+
+/* Section wrapper – optional background */
+.section {
+  padding: 2rem 1rem;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Simple responsive grid */
+.grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+/* Footer – minimal, dark / light aware */
+.footer {
+  padding: 2rem 1rem;
+  text-align: center;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border);
+}
+.footer a { color: var(--accent); }
+.footer a:hover { color: var(--accent-dark); }
+
+/* Modal with glass effect */
+.modal-glass {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+}
+.modal-glass .modal-content {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  padding: 2rem;
+  max-width: 90%;
+  width: 420px;
+  box-shadow: 0 8px 24px var(--shadow);
+}
+
+/* Tooltip – subtle fade */
+.tooltip {
+  position: relative;
+  cursor: help;
+}
+.tooltip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.4rem;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 10;
+}
+.tooltip:hover::after { opacity: 0.9; }
+
+/* End of custom CSS */
