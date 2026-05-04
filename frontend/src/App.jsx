@@ -49,59 +49,59 @@ function App() {
       <CartProvider>
         <WishlistProvider>
           <Router>
-          <Toaster 
-            position="bottom-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#1A1A1A',
-                color: '#FDFDFD',
-                borderRadius: '0',
-                fontSize: '12px',
-                letterSpacing: '1px',
-                textTransform: 'uppercase'
-              }
-            }}
-          />
-          <Layout>
-            <Routes>
-              {/* Public Entrance */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
+            <Toaster
+              position="bottom-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#1A1A1A',
+                  color: '#FDFDFD',
+                  borderRadius: '0',
+                  fontSize: '12px',
+                  letterSpacing: '1px',
+                  textTransform: 'uppercase'
+                }
+              }}
+            />
+            <Layout>
+              <Routes>
+                {/* Public Entrance */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
 
-              {/* Smart Entry: Redirect Admin to Dashboard, Users to Home */}
-              <Route path="/" element={
-                <AdminAutoRedirect>
-                  <Home />
-                </AdminAutoRedirect>
-              } />
-              <Route path="/products" element={<Products />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/offer/:id" element={<OfferProducts />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/wishlist" element={<Wishlist />} />
-              <Route path="/faq" element={<FAQ />} />
+                {/* Smart Entry: Redirect Admin to Dashboard, Users to Home */}
+                <Route path="/" element={
+                  <AdminAutoRedirect>
+                    <Home />
+                  </AdminAutoRedirect>
+                } />
+                <Route path="/products" element={<Products />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/offer/:id" element={<OfferProducts />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/wishlist" element={<Wishlist />} />
+                <Route path="/faq" element={<FAQ />} />
 
-              
-              <Route path="/profile" element={<Profile />} />
 
-              
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/my-orders" element={<MyOrders />} />
-              
-              <Route path="/admin" element={
-                <AdminRoute>
-                  <AdminPanel />
-                </AdminRoute>
-              } />
-              <Route path="/logistics" element={
-                <AdminRoute>
-                  <LogisticsHub />
-                </AdminRoute>
-              } />
-            </Routes>
-          </Layout>
-        </Router>
+                <Route path="/profile" element={<Profile />} />
+
+
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/my-orders" element={<MyOrders />} />
+
+                <Route path="/admin" element={
+                  <AdminRoute>
+                    <AdminPanel />
+                  </AdminRoute>
+                } />
+                <Route path="/logistics" element={
+                  <AdminRoute>
+                    <LogisticsHub />
+                  </AdminRoute>
+                } />
+              </Routes>
+            </Layout>
+          </Router>
         </WishlistProvider>
       </CartProvider>
     </AuthProvider>

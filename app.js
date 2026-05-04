@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const db = require("./config/db");
 const cookieParser = require("cookie-parser");
+const morgan = require("morgan");
 // Route
 const userRouter = require("./routes/web/v1/user.route");
 const adminRouter = require("./routes/web/v1/admin.route");
@@ -19,6 +20,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(morgan("dev"));
 app.set(db());
 
 // cors origin --> allow only that website that mention into origin group, ex. backend only res when localhost 3002 send reqest, other than give cors error

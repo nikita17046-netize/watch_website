@@ -47,7 +47,7 @@ const Navbar = () => {
               className="bg-transparent text-sm font-medium outline-none w-full placeholder:text-gray-300 text-black tracking-wide"
             />
             <button className="text-gray-400 hover:text-black transition-colors">
-               <Mic size={18} />
+              <Mic size={18} />
             </button>
           </div>
         </div>
@@ -64,18 +64,18 @@ const Navbar = () => {
             ) : user ? (
               <div className="flex flex-col items-center gap-1.5 group transition-colors">
                 <div className="relative">
-                   <User size={22} className="text-gray-700 group-hover:text-black transition-colors" />
-                   <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+                  <User size={22} className="text-gray-700 group-hover:text-black transition-colors" />
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-black">
-                   Account
+                  Account
                 </span>
               </div>
             ) : (
               <Link to="/login" className="flex flex-col items-center gap-1.5 group transition-colors">
                 <User size={22} className="text-gray-700 group-hover:text-black transition-colors" />
                 <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-black">
-                   Login
+                  Login
                 </span>
               </Link>
             )}
@@ -84,25 +84,25 @@ const Navbar = () => {
             {user && (
               <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-100 shadow-2xl rounded-2xl py-3 opacity-0 invisible group-hover/account:opacity-100 group-hover/account:visible transition-all duration-300 z-[110] transform origin-top scale-95 group-hover/account:scale-100">
                 <div className="px-4 py-2 border-b border-gray-50 mb-2">
-                   <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Greetings,</p>
-                   <p className="text-[11px] font-black text-black uppercase truncate">{user.username}</p>
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Greetings,</p>
+                  <p className="text-[11px] font-black text-black uppercase truncate">{user.username}</p>
                 </div>
-                
-                <Link 
-                  to={user.role === 'admin' ? '/admin' : '/profile'} 
+
+                <Link
+                  to={user.role === 'admin' ? '/admin' : '/profile'}
                   className="flex items-center gap-3 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-gray-600 hover:text-[#D4AF37] hover:bg-gray-50 transition-all"
                 >
                   <MapPin size={14} /> My Dashboard
                 </Link>
-                
-                <Link 
-                  to="/wishlist" 
+
+                <Link
+                  to="/wishlist"
                   className="flex items-center gap-3 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-gray-600 hover:text-[#D4AF37] hover:bg-gray-50 transition-all"
                 >
                   <Heart size={14} /> My Registry
                 </Link>
 
-                <button 
+                <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all border-t border-gray-50 mt-2"
                 >
@@ -128,12 +128,12 @@ const Navbar = () => {
           {/* Cart */}
           <Link to="/cart" className="flex flex-col items-center gap-1.5 group transition-colors relative">
             <div className="relative">
-               <ShoppingBag size={22} className="text-gray-700 group-hover:text-black transition-colors" />
-               {cartCount > 0 && (
-                 <span className="absolute -top-2 -right-2 w-5 h-5 bg-black text-[#D4AF37] rounded-full text-[9px] font-black flex items-center justify-center border-2 border-white">
-                   {cartCount}
-                 </span>
-               )}
+              <ShoppingBag size={22} className="text-gray-700 group-hover:text-black transition-colors" />
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 w-5 h-5 bg-black text-[#D4AF37] rounded-full text-[9px] font-black flex items-center justify-center border-2 border-white">
+                  {cartCount}
+                </span>
+              )}
             </div>
             <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-black">Cart</span>
           </Link>
@@ -157,12 +157,13 @@ const Navbar = () => {
             { label: 'New Arrivals', path: '/products?sort=newest', highlight: false },
             { label: 'Special Offers', path: '/products?sale=true', highlight: true },
             { label: 'Concierge FAQ', path: '/faq', highlight: false },
+            ...(user && user.role === 'admin' ? [{ label: 'Logistics Hub', path: '/logistics', highlight: false }] : []),
           ].map((cat) => (
             <Link
               key={cat.label}
               to={cat.path}
               className={`text-[11px] font-bold uppercase tracking-[0.15em] transition-all relative group py-2 
-                ${cat.label === 'Special Offers' ? 'px-4 py-1.5 bg-[#D4AF37] text-black rounded-full shadow-lg shadow-[#D4AF37]/20 animate-pulse-gentle' : 
+                ${cat.label === 'Special Offers' ? 'px-4 py-1.5 bg-[#D4AF37] text-black rounded-full shadow-lg shadow-[#D4AF37]/20 animate-pulse-gentle' :
                   cat.highlight ? 'text-[#B8860B]' : 'text-gray-500 hover:text-black'}`}
             >
               {cat.label}
@@ -178,6 +179,7 @@ const Navbar = () => {
 };
 
 const Footer = () => {
+  const { user } = useAuth();
   return (
     <footer className="bg-[#0F1115] pt-32 pb-16 text-white border-t border-gray-800">
       <div className="container mx-auto px-10">
@@ -194,6 +196,9 @@ const Footer = () => {
               <Link to="/products" className="hover:text-white">Catalogue</Link>
               <Link to="/faq" className="hover:text-white">Knowledge Base</Link>
               <Link to="/profile" className="hover:text-white">User Panel</Link>
+              {user && user.role === 'admin' && (
+                <Link to="/logistics" className="hover:text-white">Logistics Hub</Link>
+              )}
             </div>
           </div>
           <div>

@@ -44,7 +44,7 @@ module.exports.loginUser = async (req, res) => {
   let checkUser = await userModel.findOne({ email: email }).select("+password");
 
   if (!checkUser) {
-    return res.status(401).json({ message: "Email is invaild" });
+    return res.status(401).json({ message: "Email is invalid" });
   }
 
   const isMatch = await checkUser.comparePassword(password);
