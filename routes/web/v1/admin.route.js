@@ -63,6 +63,15 @@ router.put(
   adminController.updateUserRole,
 );
 
+// Toggle User Status (Ban/Unban)
+router.patch(
+  "/user/:id/status",
+  usermiddleware.authUser,
+  middleware.authAdmin,
+  adminController.ToggleUserStatus
+);
+router.get("/insights/:id", adminController.GetUserInsights);
+
 // FAQ Management
 router.get("/faqs", adminController.GetAllFaqs);
 router.post("/faqs", usermiddleware.authUser, middleware.authAdmin, adminController.CreateFaq);

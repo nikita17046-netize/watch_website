@@ -19,6 +19,9 @@ let OrderSchema = mongoose.Schema({
   totalAmount: {
     type: Number,
   },
+  totalbill: {
+    type: Number,
+  },
   status: {
     type: String,
     enum: ["pending", "confrom", "shipped", "delivered", "cancel"],

@@ -69,12 +69,8 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
 
-                {/* Smart Entry: Redirect Admin to Dashboard, Users to Home */}
-                <Route path="/" element={
-                  <AdminAutoRedirect>
-                    <Home />
-                  </AdminAutoRedirect>
-                } />
+                {/* Always show Home page first, no auto-redirect */}
+                <Route path="/" element={<Home />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/offer/:id" element={<OfferProducts />} />

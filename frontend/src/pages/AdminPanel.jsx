@@ -6,14 +6,16 @@ import {
    Settings, LogOut, Plus, Edit, Trash2, X, ChevronRight, TrendingUp,
    DollarSign, Briefcase, Search, Filter, Download, MoreVertical, Ban, CheckCircle2,
    AlertCircle, Sparkles, Star, Globe, Award, Zap, Compass, ArrowUpRight, Menu, Bell, ShieldCheck,
-   Activity, Layers, Fingerprint, Eye, ArrowDownRight, Maximize2, Clock, Calendar, History, Monitor, Smartphone, Tablet, AlertTriangle,
+   Activity, Layers, Fingerprint, Eye, ArrowDownRight, Maximize2, Clock, Calendar, History, Monitor, Smartphone, Tablet, AlertTriangle, ShoppingCart, Heart,
    Info, Tag, Percent, Hash, FileText, MapPin, Truck, CreditCard, RefreshCcw, Flame, UserCheck, Mail, ShieldAlert, Brain, Cpu, Wand2, Megaphone, BellRing, Inbox
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const AdminPanel = () => {
+   const { logout } = useAuth();
    const [activeTab, setActiveTab] = useState('dashboard');
    const [stats, setStats] = useState({
       totalUsers: 0, totalProducts: 0, totalOrders: 0, totalRevenue: 0,
@@ -96,46 +98,41 @@ const AdminPanel = () => {
 
    const fetchAllData = useCallback(async () => {
       setLoading(true);
-      const safetyTimeout = setTimeout(() => setLoading(false), 5000);
+      
+      // 1. Fetch Stats Priority (Dashboard basic view)
       try {
-         if (activeTab === 'dashboard') {
-            const res = await API.get('/admin/stats');
-            setStats(res.data.stats || stats);
-            setSalesData(res.data.salesData || []);
-            setRecentOrders(res.data.recentOrders || []);
-            setTopProducts(res.data.topProducts || []);
-         } else if (activeTab === 'inventory' || activeTab === 'neural') {
-            const res = await API.get('/product/all');
-            const productsList = res.data.products || [];
-            setProducts(productsList);
-
-            // AI Logic: Scan for Low Stock (Only if in Neural/Inventory)
-            if (activeTab === 'neural') {
-               const lowStock = productsList.filter(p => p.stock <= 5 && p.stock > 0);
-               if (lowStock.length > 0) {
-                  toast(`CRITICAL: ${lowStock.length} Assets at low stock`, {
-                     icon: '⚠️',
-                     style: { borderRadius: '20px', background: '#0F172A', color: '#fff', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }
-                  });
-               }
-            }
-         } else if (activeTab === 'orders') {
-            const res = await API.get('/admin/orders');
-            setOrders(res.data.orders || []);
-         } else if (activeTab === 'clients') {
-            const res = await API.get('/admin/users');
-            setUsers(res.data.users || res.data || []);
-         } else if (activeTab === 'faqs') {
-            const res = await API.get('/admin/faqs');
-            setFaqs(Array.isArray(res.data) ? res.data : (res.data.faqs || []));
-         }
+         const statsRes = await API.get('/admin/stats');
+         setStats(statsRes.data.stats || {});
+         setSalesData(statsRes.data.salesData || []);
+         setRecentOrders(statsRes.data.recentOrders || []);
+         setTopProducts(statsRes.data.topProducts || []);
       } catch (err) {
-         console.error("Fetch Error:", err);
+         console.error('Stats sync FAILED:', err);
       } finally {
-         clearTimeout(safetyTimeout);
-         setLoading(false);
+         setLoading(false); // Hide global loader after stats
       }
-   }, [activeTab]);
+
+      // 2. Fetch Other Data in Background (Non-blocking)
+      const fetchBackground = async () => {
+         try {
+            const [productsRes, usersRes, ordersRes, faqsRes] = await Promise.allSettled([
+               API.get('/product/get-product'),
+               API.get('/admin/users'),
+               API.get('/admin/orders'),
+               API.get('/admin/faqs')
+            ]);
+
+            if (productsRes.status === 'fulfilled') setProducts(productsRes.value.data.products || []);
+            if (usersRes.status === 'fulfilled') setUsers(usersRes.value.data.users || usersRes.value.data || []);
+            if (ordersRes.status === 'fulfilled') setOrders(ordersRes.value.data.orders || []);
+            if (faqsRes.status === 'fulfilled') setFaqs(Array.isArray(faqsRes.value.data) ? faqsRes.value.data : []);
+         } catch (err) {
+            console.error('Background sync encounterd issues');
+         }
+      };
+
+      fetchBackground();
+   }, []);
 
 
    useEffect(() => {
@@ -253,6 +250,46 @@ const AdminPanel = () => {
       }
    };
 
+   const handleToggleUserStatus = async (id) => {
+      try {
+         const res = await API.patch(`/admin/user/${id}/status`);
+         toast.success(`User is now ${res.data.status.toUpperCase()}`);
+         fetchAllData();
+      } catch (err) {
+         toast.error('Status rotation FAILED');
+      }
+   };
+
+   const handleUpdateRole = async (id, newRole) => {
+      try {
+         await API.put(`/admin/user/${id}/role`, { role: newRole });
+         toast.success(`Access Level ELEVATED to ${newRole.toUpperCase()}`);
+         fetchAllData();
+      } catch (err) {
+         toast.error('Authorization update BLOCKED');
+      }
+   };
+
+   const [userInsights, setUserInsights] = useState(null);
+   const [isInsightsModalOpen, setIsInsightsModalOpen] = useState(false);
+
+   const handleFetchUserInsights = async (id) => {
+      console.log('Initiating Intelligence Retrieval for ID:', id);
+      try {
+         const res = await API.get(`/test-insights/${id}`);
+         console.log('Intelligence Profile DATA:', res.data);
+         if (res.data) {
+            setUserInsights(res.data);
+            setIsInsightsModalOpen(true);
+            // alert('Success: Data Received. Opening Popup...');
+         }
+      } catch (err) {
+         console.error('Intelligence Retrieval FAILED:', err);
+         const errMsg = err.response?.data?.message || err.message || 'Unknown Error';
+         toast.error(`FAILED: ${errMsg}`);
+      }
+   };
+
    return (
       <div className={`min-h-screen flex font-inter transition-colors duration-500 ${isDarkMode ? 'bg-[#0F1115] text-white' : 'bg-[#F9FAFB] text-slate-800'}`}>
 
@@ -276,6 +313,7 @@ const AdminPanel = () => {
                   { id: 'inventory', label: 'Inventory Registry', icon: Package, link: null },
                   { id: 'orders', label: 'Fulfillment Desk', icon: ShoppingBag, link: null },
                   { id: 'clients', label: 'User Panel', icon: Users, link: null },
+                  { id: 'watchlist', label: 'Watchlist Registry', icon: Eye, link: null },
                   { id: 'coupons', label: 'Offer Terminal', icon: Ticket },
                   { id: 'faqs', label: 'FAQ Manager', icon: FileText },
                   { id: 'support', label: 'Support Desk', icon: MessageSquare },
@@ -310,7 +348,10 @@ const AdminPanel = () => {
                <Link to="/" className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5">
                   <Globe size={18} /> Storefront
                </Link>
-               <button className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:text-red-400 transition-all">
+               <button 
+                  onClick={logout}
+                  className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:text-red-400 transition-all"
+               >
                   <LogOut size={18} /> Exit
                </button>
             </div>
@@ -383,7 +424,7 @@ const AdminPanel = () => {
                         key={activeTab}
                         initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: "easeOut" }}
                      >
-
+                        <>
                         {activeTab === 'neural' && (
                            <div className="space-y-10">
                               <div className="flex items-center justify-between">
@@ -662,7 +703,7 @@ const AdminPanel = () => {
                                  </div>
                               </div>
                            </div>
-                        )}
+                     )}
 
                         {activeTab === 'inventory' && (
                            <div className="space-y-6">
@@ -723,7 +764,7 @@ const AdminPanel = () => {
                               <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
                                  <table className="w-full text-left">
                                     <thead className="bg-slate-50/50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b">
-                                       <tr><th className="p-8 pl-12">Client Profile</th><th className="p-8">Contact Channel</th><th className="p-8">Join Date</th><th className="p-8">Protocol Status</th><th className="p-8 text-center pr-12">Action</th></tr>
+                                       <tr><th className="p-8 pl-12">Client Profile</th><th className="p-8">Acquisition Stats</th><th className="p-8">Join Date</th><th className="p-8">Access & Status</th><th className="p-8 text-center pr-12">Action</th></tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
                                        {filteredUsers.length > 0 ? filteredUsers.map((u) => (
@@ -733,13 +774,16 @@ const AdminPanel = () => {
                                                    <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 border border-indigo-100 text-[11px] font-black uppercase shadow-sm">
                                                       {u?.username?.[0] || 'U'}
                                                    </div>
-                                                   <p className="text-xs font-black text-slate-800 uppercase tracking-tight">{u?.username || 'Unknown Profile'}</p>
+                                                   <div>
+                                                      <p className="text-xs font-black text-slate-800 uppercase tracking-tight">{u?.username || 'Unknown Profile'}</p>
+                                                      <p className="text-[9px] text-slate-400 font-bold lowercase">{u?.email}</p>
+                                                   </div>
                                                 </div>
                                              </td>
                                              <td className="p-8">
-                                                <div className="flex items-center gap-2 text-slate-400 italic">
-                                                   <Mail size={14} />
-                                                   <p className="text-[10px] font-bold">{u?.email}</p>
+                                                <div className="space-y-1">
+                                                   <p className="text-xs font-black text-slate-800">₹{formatPrice(u?.totalSpent)}</p>
+                                                   <p className="text-[9px] text-indigo-500 font-bold uppercase tracking-widest">{u?.orderCount || 0} Orders</p>
                                                 </div>
                                              </td>
                                              <td className="p-8">
@@ -749,14 +793,30 @@ const AdminPanel = () => {
                                                 </div>
                                              </td>
                                              <td className="p-8">
-                                                <span className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100">
-                                                   Active Client
-                                                </span>
+                                                <div className="flex flex-col gap-2">
+                                                   <select 
+                                                      value={u?.role || 'user'} 
+                                                      onChange={(e) => handleUpdateRole(u._id, e.target.value)}
+                                                      className="bg-transparent text-[9px] font-black uppercase tracking-widest text-slate-600 focus:outline-none border-b border-slate-100 cursor-pointer"
+                                                   >
+                                                      <option value="user">Normal User</option>
+                                                      <option value="manager">Manager</option>
+                                                      <option value="admin">Administrator</option>
+                                                   </select>
+                                                   <span className={`w-fit px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${u?.status === 'suspended' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
+                                                      {u?.status || 'active'}
+                                                   </span>
+                                                </div>
                                              </td>
                                              <td className="p-8 text-center pr-12">
                                                 <div className="flex justify-center gap-2">
+                                                   <button onClick={() => handleFetchUserInsights(u._id)} className="w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-indigo-500 hover:bg-indigo-50 shadow-sm transition-all">
+                                                      <Eye size={16} />
+                                                   </button>
+                                                   <button onClick={() => handleToggleUserStatus(u._id)} className={`w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center shadow-sm transition-all ${u?.status === 'suspended' ? 'text-emerald-500 hover:bg-emerald-50' : 'text-rose-500 hover:bg-rose-50'}`}>
+                                                      {u?.status === 'suspended' ? <UserCheck size={16} /> : <Ban size={16} />}
+                                                   </button>
                                                    <button className="w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-300 hover:text-indigo-600 shadow-sm transition-all"><MessageSquare size={16} /></button>
-                                                   <button className="w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-300 hover:text-red-500 shadow-sm transition-all"><ShieldAlert size={16} /></button>
                                                 </div>
                                              </td>
                                           </tr>
@@ -769,13 +829,98 @@ const AdminPanel = () => {
                                        )}
                                     </tbody>
                                  </table>
+                           </div>
+                        </div>
+                     )}
+
+                     {activeTab === 'watchlist' && (
+                        <div className="space-y-8">
+                           <div className="bg-[#0A0C10] p-10 rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden">
+                              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 blur-[100px] rounded-full" />
+                              <div className="relative z-10 flex justify-between items-center">
+                                 <div>
+                                    <h3 className="text-2xl font-black text-white tracking-tight uppercase italic">Intelligence Ledger</h3>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">Behavioral Registry & Acquisition Tracking</p>
+                                 </div>
+                                 <div className="flex gap-4">
+                                    <div className="px-6 py-4 bg-white/5 rounded-2xl border border-white/10 flex items-center gap-3">
+                                       <Sparkles size={18} className="text-indigo-400" />
+                                       <span className="text-[10px] font-black text-white uppercase tracking-widest">Global Scan Active</span>
+                                    </div>
+                                 </div>
                               </div>
                            </div>
-                        )}
 
-                        {activeTab === 'coupons' && (
-                           <div className="space-y-8">
-                              <div className="flex justify-between items-center bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
+                           <div className="bg-white rounded-[3rem] border border-slate-100 shadow-xl overflow-hidden">
+                              <table className="w-full text-left">
+                                 <thead className="bg-slate-50/50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b">
+                                    <tr>
+                                       <th className="p-8 pl-12">User Profile</th>
+                                       <th className="p-8">Acquisitions (Purchased)</th>
+                                       <th className="p-8">Cart Registry</th>
+                                       <th className="p-8">Watchlist (Favorites)</th>
+                                       <th className="p-8 text-center pr-12">Insights</th>
+                                    </tr>
+                                 </thead>
+                                 <tbody className="divide-y divide-slate-50">
+                                    {users.map((u) => (
+                                       <tr key={u._id} className="hover:bg-slate-50/80 transition-all group">
+                                          <td className="p-8 pl-12">
+                                             <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white text-[11px] font-black uppercase">
+                                                   {u.username?.[0]}
+                                                </div>
+                                                <div>
+                                                   <p className="text-xs font-black text-slate-800 uppercase tracking-tight">{u.username}</p>
+                                                   <p className="text-[9px] text-slate-400 font-bold lowercase">{u.email}</p>
+                                                </div>
+                                             </div>
+                                          </td>
+                                          <td className="p-8">
+                                             <div className="flex flex-wrap gap-1 max-w-[200px]">
+                                                {u.orderCount > 0 ? (
+                                                   <span className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[9px] font-black uppercase">{u.orderCount} Successions</span>
+                                                ) : (
+                                                   <span className="text-[9px] text-slate-300 font-black uppercase italic">No Acquisitions</span>
+                                                )}
+                                             </div>
+                                          </td>
+                                          <td className="p-8">
+                                             <div className="flex items-center gap-2">
+                                                <ShoppingCart size={14} className="text-amber-500" />
+                                                <span className="text-[10px] font-black text-slate-600 uppercase">{u.cartCount || 0} Items</span>
+                                             </div>
+                                          </td>
+                                          <td className="p-8">
+                                             <div className="flex items-center gap-2">
+                                                <Heart size={14} className="text-rose-500" />
+                                                <span className="text-[10px] font-black text-slate-600 uppercase">{u.wishlistCount || 0} Saved</span>
+                                             </div>
+                                          </td>
+                                          <td className="p-8 text-center pr-12">
+                                             <button 
+                                                onClick={(e) => {
+                                                   e.preventDefault();
+                                                   e.stopPropagation();
+                                                   handleFetchUserInsights(u._id);
+                                                }}
+                                                className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all shadow-md relative z-20"
+                                             >
+                                                Full Profile
+                                             </button>
+                                          </td>
+                                       </tr>
+                                    ))}
+                                 </tbody>
+                              </table>
+                           </div>
+                        </div>
+                     )}
+
+                     {activeTab === 'coupons' && (
+                        <div className="space-y-8">
+                           <div className="flex justify-between items-center bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
+
                                  <div>
                                     <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase italic">Offer Injection Center</h3>
                                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Manage Special Promo Boxes</p>
@@ -1032,8 +1177,7 @@ const AdminPanel = () => {
                               </div>
                            </div>
                         )}
-
-
+                        </>
                      </motion.div>
                   )}
                </AnimatePresence>
@@ -1077,7 +1221,6 @@ const AdminPanel = () => {
                </AnimatePresence>
 
             </div>
-         </main>
 
          {/* --- ADD PRODUCT MODAL --- */}
          <AnimatePresence>
@@ -1153,7 +1296,7 @@ const AdminPanel = () => {
                               ))}
                            </div>
                            <div className="mt-8 pt-8 border-t border-slate-50">
-                              <div className="flex justify-between items-center mb-6"><div><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol Valuation</p><p className="text-2xl font-black text-indigo-600 tracking-tighter">₹{formatPrice(selectedOrder.totalAmount)}</p></div>
+                              <div className="flex justify-between items-center mb-6"><div><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol Valuation</p><p className="text-2xl font-black text-indigo-600 tracking-tighter">₹{formatPrice(selectedOrder.totalAmount)}</p></div></div>
                                  <div className="flex flex-col gap-4">
                                     {selectedOrder.status === 'pending' ? (
                                        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -1234,7 +1377,6 @@ const AdminPanel = () => {
                                        </div>
                                     )}
                                  </div>
-                              </div>
                               <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center gap-4 text-emerald-700"><Truck size={20} /><p className="text-[10px] font-black uppercase tracking-widest">Protocol Status: {selectedOrder.status} - Shipment Authorized</p></div>
                            </div>
                         </div>
@@ -1291,8 +1433,141 @@ const AdminPanel = () => {
             )}
          </AnimatePresence>
 
-      </div>
-   );
+         {/* CUSTOMER INTELLIGENCE HUB MODAL */}
+         <AnimatePresence>
+            {isInsightsModalOpen && userInsights && (
+               <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 backdrop-blur-2xl bg-slate-900/10 overflow-y-auto">
+                  <motion.div 
+                     initial={{ opacity: 0, y: 100 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     exit={{ opacity: 0, y: 100 }}
+                     transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                     className="bg-white w-full max-w-7xl rounded-[2rem] shadow-[0_40px_120px_-20px_rgba(0,0,0,0.15)] overflow-hidden relative border border-slate-100"
+                  >
+                     {/* Editorial Header */}
+                     <div className="relative px-16 py-14 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-slate-50">
+                        <div className="space-y-4">
+                           <div className="flex items-center gap-3">
+                              <div className="w-1 h-8 bg-amber-400 rounded-full"></div>
+                              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-amber-600/80">Registry Intelligence</span>
+                           </div>
+                           <h2 className="text-5xl font-light text-slate-900 tracking-tight leading-none">Behavioral <span className="italic font-serif text-slate-400">Insights</span></h2>
+                           <p className="text-xs text-slate-400 font-medium tracking-wide max-w-md leading-relaxed">A comprehensive analytical matrix detailing user acquisition patterns, registry preferences, and active cart engagement.</p>
+                        </div>
+                        <div className="flex items-center gap-10">
+                           <div className="text-right">
+                              <p className="text-[9px] font-black uppercase tracking-widest text-slate-300 mb-1">Last Sync</p>
+                              <p className="text-xs font-bold text-slate-900">{new Date().toLocaleTimeString()}</p>
+                           </div>
+                           <button 
+                              onClick={() => setIsInsightsModalOpen(false)}
+                              className="w-14 h-14 rounded-full border border-slate-100 hover:border-slate-900 flex items-center justify-center transition-all group"
+                           >
+                              <X size={20} className="text-slate-400 group-hover:text-slate-900 transition-colors" />
+                           </button>
+                        </div>
+                     </div>
+
+                     <div className="px-16 py-12">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+                           
+                           {/* SECTION: ACQUISITION */}
+                           <div className="space-y-10">
+                              <div className="flex items-baseline justify-between border-b border-slate-100 pb-4">
+                                 <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-900">Acquisitions</h3>
+                                 <span className="text-[10px] font-bold text-slate-400 italic">{userInsights.orders.length} Records</span>
+                              </div>
+                              <div className="space-y-8 max-h-[500px] overflow-y-auto pr-4 custom-scrollbar">
+                                 {userInsights.orders.length > 0 ? userInsights.orders.map((order, i) => (
+                                    <div key={i} className="group cursor-pointer">
+                                       <div className="flex justify-between items-start mb-4">
+                                          <div>
+                                             <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">ID #{order._id.slice(-6).toUpperCase()}</p>
+                                             <p className="text-xs font-bold text-slate-900">{new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                                          </div>
+                                          <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
+                                       </div>
+                                       <div className="space-y-2 mb-4">
+                                          {order.items.map((item, j) => (
+                                             <div key={j} className="flex justify-between text-[11px] text-slate-500 font-medium uppercase tracking-tight">
+                                                <span>{item.productId?.name}</span>
+                                                <span className="text-slate-300">x{item.quantity}</span>
+                                             </div>
+                                          ))}
+                                       </div>
+                                       <div className="flex justify-between items-end border-t border-slate-50 pt-4 group-hover:border-slate-200 transition-colors">
+                                          <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest italic">{order.status}</span>
+                                          <span className="text-xl font-light text-slate-900 tracking-tighter">₹{formatPrice(order.totalAmount || order.totalbill)}</span>
+                                       </div>
+                                    </div>
+                                 )) : <p className="text-xs text-slate-400 italic text-center py-20">No acquisition history available.</p>}
+                              </div>
+                           </div>
+
+                           {/* SECTION: REGISTRY */}
+                           <div className="space-y-10">
+                              <div className="flex items-baseline justify-between border-b border-slate-100 pb-4">
+                                 <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-900">Registry</h3>
+                                 <span className="text-[10px] font-bold text-slate-400 italic">{userInsights.wishlist.length} Items</span>
+                              </div>
+                              <div className="space-y-6 max-h-[500px] overflow-y-auto pr-4 custom-scrollbar">
+                                 {userInsights.wishlist.length > 0 ? userInsights.wishlist.map((item, i) => (
+                                    <Link key={i} to={`/product/${item?._id}`} className="block">
+                                       <div className="flex items-center gap-6 group hover:translate-x-2 transition-transform">
+                                          <div className="w-20 h-20 bg-slate-50 border border-slate-100 flex-shrink-0 overflow-hidden">
+                                             <img src={item?.images?.[0]} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                                          </div>
+                                          <div className="flex-1 border-b border-slate-50 pb-6 group-hover:border-slate-200 transition-colors">
+                                             <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-1 truncate">{item?.name}</h4>
+                                             <p className="text-[9px] text-slate-400 font-bold uppercase mb-2 tracking-tighter">{item?.brand || 'Luxury Piece'}</p>
+                                             <div className="text-xs font-bold text-slate-900 italic">₹{formatPrice(item?.price)}</div>
+                                          </div>
+                                       </div>
+                                    </Link>
+                                 )) : <p className="text-xs text-slate-400 italic text-center py-20">Registry is currently unoccupied.</p>}
+                              </div>
+                           </div>
+
+                           {/* SECTION: CART */}
+                           <div className="space-y-10">
+                              <div className="flex items-baseline justify-between border-b border-slate-100 pb-4">
+                                 <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-900">Engagement</h3>
+                                 <span className="text-[10px] font-bold text-slate-400 italic">Active Cart</span>
+                              </div>
+                              <div className="space-y-6 max-h-[500px] overflow-y-auto pr-4 custom-scrollbar">
+                                 {userInsights.cart.length > 0 ? userInsights.cart.map((item, i) => (
+                                    <Link key={i} to={`/product/${item.productId?._id}`} className="block">
+                                       <div className="flex items-center gap-5 bg-white/5 p-5 rounded-[32px] border border-white/5 hover:border-slate-900 transition-all group">
+                                          <div className="w-20 h-20 bg-slate-50 border border-slate-100 flex-shrink-0 overflow-hidden">
+                                             <img src={item.productId?.images?.[0]} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                                          </div>
+                                          <div className="flex-1 border-b border-slate-50 pb-6 group-hover:border-slate-200 transition-colors">
+                                             <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-1 truncate">{item.productId?.name}</h4>
+                                             <p className="text-[9px] text-slate-400 font-bold uppercase mb-2 tracking-tighter">Qty: {item.quantity}</p>
+                                             <div className="text-xs font-black text-amber-600 italic">₹{formatPrice(item.productId?.price)}</div>
+                                          </div>
+                                       </div>
+                                    </Link>
+                                 )) : <p className="text-xs text-slate-400 italic text-center py-20">No active engagement in cart.</p>}
+                              </div>
+                           </div>
+
+                        </div>
+                     </div>
+                     
+                     {/* Subtle Bottom Bar */}
+                     <div className="bg-slate-50/50 px-16 py-6 flex justify-between items-center text-[9px] font-black uppercase tracking-[0.3em] text-slate-300">
+                        <span>Luxe Intelligence Matrix v4.2</span>
+                        <span>Secured Terminal Access</span>
+                     </div>
+                  </motion.div>
+               </div>
+            )}
+         </AnimatePresence>
+
+      </main>
+   </div>
+    );
 };
 
 export default AdminPanel;

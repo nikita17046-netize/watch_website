@@ -33,7 +33,12 @@ let userSchema = mongoose.Schema({
     zip: { type: String },
     country: { type: String },
   },
-});
+  status: {
+    type: String,
+    enum: ["active", "suspended"],
+    default: "active",
+  },
+}, { timestamps: true });
 
 // jwt token
 userSchema.methods.generateAuthToken = function () {

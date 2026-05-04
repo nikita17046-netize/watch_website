@@ -14,6 +14,7 @@ const cartRouter = require("./routes/web/v1/cart.route");
 const orderRouter = require("./routes/web/v1/order.route");
 const wishlistRouter = require("./routes/web/v1/wishlist.route");
 const reviewRouter = require("./routes/web/v1/review.route");
+const adminController = require("./controllers/admin.controller");
 
 const app = express();
 
@@ -23,20 +24,17 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 app.set(db());
 
-// cors origin --> allow only that website that mention into origin group, ex. backend only res when localhost 3002 send reqest, other than give cors error
-// localhost 3002 --> req --> accept --> give response
-// localhost 3004 --> req --> cors error --> don't give response
-// in origin you mention frontend urls (deveopment, producation both)
 app.use(cors({ origin: "http://localhost:3002", credentials: true }));
 
-PORT = process.env.PORT;
+const PORT = process.env.PORT || 3005;
 
-// temp route --> in Backend we Don't create a Home Route. after Teasting / Developement Remove Home Route
 app.get("/", (req, res) => {
   res.status(401).json({ message: "Access Denined !!" });
 });
+
 app.use("/user", userRouter);
 app.use("/admin", adminRouter);
+app.get("/test-insights/:id", adminController.GetUserInsights);
 app.use("/product", productRouter);
 app.use("/bot", chatRouter);
 app.use("/cart", cartRouter);
