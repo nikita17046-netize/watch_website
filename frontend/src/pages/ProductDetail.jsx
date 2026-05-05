@@ -4,7 +4,7 @@ import API from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Heart, Shield, RefreshCw, Truck, ChevronRight, Star, Minus, Plus, Share2, Info } from 'lucide-react';
+import { ShoppingBag, Heart, Shield, RefreshCw, Truck, ChevronRight, Star, Minus, Plus, Share2, Info, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useWishlist as useLuxeWishlist } from '../context/WishlistContext';
 
@@ -24,6 +24,8 @@ const ProductDetail = () => {
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [isPurchased, setIsPurchased] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -47,14 +49,49 @@ const ProductDetail = () => {
       setReviewsLoading(false);
     };
 
+    const checkPurchase = async () => {
+      if (!user) return;
+      try {
+        const res = await API.get('/order/my-orders');
+        const userOrders = res.data.orders || [];
+        const hasPurchased = userOrders.some(order => 
+          order.status === 'delivered' && 
+          order.items.some(item => (item.productId?._id === id || item.productId === id))
+        );
+        setIsPurchased(hasPurchased);
+      } catch (err) {
+        console.error("Purchase check failed", err);
+      }
+    };
+
     fetchProduct();
     fetchReviews();
-  }, [id]);
+    checkPurchase();
+  }, [id, user]);
+
+  useEffect(() => {
+    const fetchRelated = async () => {
+      if (product) {
+        try {
+          const res = await API.get('/product/all', {
+            params: { category: product.category }
+          });
+          setRelatedProducts(res.data.products.filter(p => p._id !== product._id).slice(0, 4));
+        } catch (err) {
+          console.error("Related fetch error", err);
+        }
+      }
+    };
+    fetchRelated();
+  }, [product]);
 
   const handleAddToCart = async () => {
     setAdding(true);
     try {
-      await addToCart(product._id, quantity);
+      const success = await addToCart(product._id, quantity);
+      if (success === false) {
+        navigate('/login');
+      }
     } catch (err) {
       console.error("Cart error", err);
     }
@@ -255,7 +292,7 @@ const ProductDetail = () => {
             <h3 className="text-4xl font-playfair text-[#1A1A1A]">Client <span className="italic font-light">Gallery.</span></h3>
             
             {/* Add Review Form */}
-            {user && (
+            {user && isPurchased ? (
               <form onSubmit={handleSubmitReview} className="bg-white p-8 rounded-3xl border-2 border-dashed border-[#C9A84C]/30 mb-12">
                 <div className="flex items-center gap-4 mb-6">
                   {[1, 2, 3, 4, 5].map(s => (
@@ -280,6 +317,17 @@ const ProductDetail = () => {
                   {submittingReview ? 'Transmitting...' : 'Post Experience'}
                 </button>
               </form>
+            ) : user && (
+              <div className="bg-white p-10 rounded-3xl border border-[#F0E6D2] mb-12 text-center">
+                 <div className="w-16 h-16 bg-[#F9F5EF] rounded-full flex items-center justify-center mx-auto mb-6 text-[#C9A84C]">
+                    <ShieldCheck size={32} />
+                 </div>
+                 <h4 className="text-sm font-black uppercase tracking-widest text-[#1A1A1A] mb-3">Verification Required</h4>
+                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
+                   Experiences are reserved for verified collectors. <br/> 
+                   Acquire this masterpiece to share your gallery documentation.
+                 </p>
+              </div>
             )}
 
             <div className="space-y-8">
@@ -313,6 +361,49 @@ const ProductDetail = () => {
 
         </div>
 
+        {/* RELATED PRODUCTS SECTION */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-40 pt-32 border-t border-gray-100">
+            <div className="flex justify-between items-end mb-20">
+              <div>
+                <span className="text-[#C9A84C] uppercase tracking-[0.7em] text-[10px] font-black mb-4 block">Editorial Curation</span>
+                <h3 className="text-5xl font-playfair font-black text-slate-900 italic">Discover Similar <span className="font-light">Masterpieces.</span></h3>
+              </div>
+              <Link to="/products" className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 hover:text-black transition-colors border-b-2 border-gray-100 pb-2 mb-2">View Full Collection</Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+              {relatedProducts.map((p, idx) => (
+                <motion.div 
+                  key={p._id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1, duration: 0.8 }}
+                  className="group"
+                >
+                  <Link to={`/product/${p._id}`}>
+                    <div className="relative aspect-[4/5] rounded-[3rem] bg-[#F9F5EF] mb-8 overflow-hidden">
+                      <img 
+                        src={p.images[0]} 
+                        alt={p.name} 
+                        className="w-full h-full object-cover transition-transform duration-[3s] group-hover:scale-110" 
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-700 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                         <span className="px-8 py-3 bg-white text-black text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-2xl transform translate-y-10 group-hover:translate-y-0 transition-all duration-700">View Piece</span>
+                      </div>
+                    </div>
+                    <div className="px-2">
+                      <p className="text-[9px] font-black text-[#C9A84C] uppercase tracking-[0.4em] mb-2">{p.brand}</p>
+                      <h4 className="text-lg font-playfair font-bold text-slate-900 group-hover:text-[#C9A84C] transition-colors mb-2">{p.name}</h4>
+                      <p className="text-sm font-black text-slate-400">${p.price.toLocaleString()}</p>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

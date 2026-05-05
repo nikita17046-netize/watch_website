@@ -3,39 +3,45 @@ const productModel = require("../models/product.model");
 
 // add new products
 module.exports.createProduct = async (req, res) => {
-  const {
-    name,
-    description,
-    stock,
-    price,
-    discount,
-    isNewProduct,
-    sku,
-    images,
-    brand,
-    category,
-  } = req.body;
+  try {
+    const {
+      name,
+      description,
+      stock,
+      price,
+      discount,
+      isNewProduct,
+      sku,
+      images,
+      brand,
+      category,
+    } = req.body;
 
-  const isExist = await productModel.findOne({ sku: sku });
+    console.log("Received product data:", { name, isNewProduct, body_isNewProduct: req.body.isNewProduct });
 
-  if (isExist) {
-    return res.status(400).json({ messge: "Product Already Registerd" });
+    const isExist = await productModel.findOne({ sku: sku });
+
+    if (isExist) {
+      return res.status(400).json({ message: "Product Already Registered (SKU must be unique)" });
+    }
+
+    const product = await productService.createProduct({
+      name,
+      description,
+      stock,
+      price,
+      discount,
+      isNewProduct,
+      sku,
+      images,
+      brand,
+      category,
+    });
+
+    return res.status(200).json({ message: "Product Added Successfully", product });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
   }
-
-  const product = await productService.createProduct({
-    name,
-    description,
-    stock,
-    price,
-    discount,
-    isNewProduct,
-    sku,
-    images,
-    brand,
-    category,
-  });
-
-  return res.status(200).json({ msg: "Product Added Sucessfully", product });
 };
 
 // all products

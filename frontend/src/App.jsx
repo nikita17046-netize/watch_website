@@ -7,6 +7,7 @@ import { WishlistProvider } from './context/WishlistContext';
 
 // Components & Layout
 import Layout from './components/Layout';
+import ScrollToTop from './components/ScrollToTop';
 
 // Pages
 import Home from './pages/Home';
@@ -23,6 +24,7 @@ import MyOrders from './pages/MyOrders';
 import FAQ from './pages/FAQ';
 import Profile from './pages/Profile';
 import LogisticsHub from './pages/LogisticsHub';
+import Contact from './pages/Contact';
 
 
 
@@ -49,6 +51,7 @@ function App() {
       <CartProvider>
         <WishlistProvider>
           <Router>
+            <ScrollToTop />
             <Toaster
               position="bottom-right"
               toastOptions={{
@@ -77,8 +80,7 @@ function App() {
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/wishlist" element={<Wishlist />} />
                 <Route path="/faq" element={<FAQ />} />
-
-
+                <Route path="/contact" element={<Contact />} />
                 <Route path="/profile" element={<Profile />} />
 
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
-import { User, Mail, Lock, ArrowRight, Loader2, ArrowLeft } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, Loader2, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 // Use the generated image path
@@ -15,6 +15,7 @@ const Register = () => {
     password: ''
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
 
@@ -97,21 +98,21 @@ const Register = () => {
                 <span className="text-2xl font-playfair font-black tracking-[0.4em] text-luxury-charcoal">LUXE</span>
               </Link>
               
-              <span className="text-luxury-gold uppercase tracking-[0.7em] text-[9px] font-black mb-4 block">Membership Application</span>
-              <h2 className="text-5xl font-playfair font-black text-luxury-charcoal mb-4">Register.</h2>
-              <p className="text-gray-400 text-[10px] uppercase tracking-[0.4em] font-bold">Initiate your journey into curated excellence.</p>
+              <span className="text-luxury-gold uppercase tracking-[0.7em] text-[10px] font-black mb-6 block">Membership Application Suite</span>
+              <h2 className="text-7xl font-playfair font-black text-luxury-charcoal mb-6 leading-tight">Register.</h2>
+              <p className="text-luxury-charcoal/60 text-[11px] uppercase tracking-[0.5em] font-black max-w-[280px] leading-relaxed">Initiate your journey into curated excellence.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-10">
-              <div className="space-y-2 group">
-                <label className="text-[10px] uppercase tracking-[0.4em] font-black text-gray-400 ml-1 group-focus-within:text-luxury-gold transition-colors">Identity Name</label>
+              <div className="space-y-4 group">
+                <label className="text-[10px] uppercase tracking-[0.5em] font-black text-slate-500 ml-1 group-focus-within:text-luxury-gold transition-colors">Identity Name</label>
                 <div className="relative">
-                  <User size={18} className="absolute left-1 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-luxury-gold transition-colors" />
+                  <User size={20} className="absolute left-1 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-luxury-gold transition-all duration-300" />
                   <input
                     name="username"
                     type="text"
                     placeholder="E.G. ARTHUR MORGAN"
-                    className="luxury-input pl-12"
+                    className="luxury-input pl-16 py-4 text-[13px] font-black tracking-[0.2em] uppercase font-outfit"
                     value={formData.username}
                     onChange={handleChange}
                     required
@@ -119,15 +120,15 @@ const Register = () => {
                 </div>
               </div>
 
-              <div className="space-y-2 group">
-                <label className="text-[10px] uppercase tracking-[0.4em] font-black text-gray-400 ml-1 group-focus-within:text-luxury-gold transition-colors">Registry Email</label>
+              <div className="space-y-4 group">
+                <label className="text-[10px] uppercase tracking-[0.5em] font-black text-slate-500 ml-1 group-focus-within:text-luxury-gold transition-colors">Registry Email</label>
                 <div className="relative">
-                  <Mail size={18} className="absolute left-1 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-luxury-gold transition-colors" />
+                  <Mail size={20} className="absolute left-1 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-luxury-gold transition-all duration-300" />
                   <input
                     name="email"
                     type="email"
                     placeholder="MEMBER@LUXE.COM"
-                    className="luxury-input pl-12"
+                    className="luxury-input pl-16 py-4 text-[13px] font-black tracking-[0.2em] uppercase font-outfit"
                     value={formData.email}
                     onChange={handleChange}
                     required
@@ -135,33 +136,40 @@ const Register = () => {
                 </div>
               </div>
 
-              <div className="space-y-2 group">
-                <label className="text-[10px] uppercase tracking-[0.4em] font-black text-gray-400 ml-1 group-focus-within:text-luxury-gold transition-colors">Security Key</label>
+              <div className="space-y-4 group">
+                <label className="text-[10px] uppercase tracking-[0.5em] font-black text-slate-500 ml-1 group-focus-within:text-luxury-gold transition-colors">Security Key</label>
                 <div className="relative">
-                  <Lock size={18} className="absolute left-1 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-luxury-gold transition-colors" />
+                  <Lock size={20} className="absolute left-1 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-luxury-gold transition-all duration-300" />
                   <input
                     name="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    className="luxury-input pl-12"
+                    className="luxury-input pl-16 pr-12 py-4 text-[13px] font-black tracking-[1em] font-outfit"
                     value={formData.password}
                     onChange={handleChange}
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 hover:text-luxury-gold transition-colors p-2"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
 
-              <div className="pt-6">
+              <div className="pt-10">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="luxury-btn w-full"
+                  className="luxury-btn w-full shadow-[0_20px_40px_-10px_rgba(15,23,42,0.3)] hover:shadow-[0_30px_60px_-10px_rgba(15,23,42,0.5)] active:scale-95 transition-all"
                 >
-                  {loading ? <Loader2 className="animate-spin" size={18} /> : (
-                    <>
-                      <span>Apply for Membership</span>
-                      <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
-                    </>
+                  {loading ? <Loader2 className="animate-spin" size={20} /> : (
+                    <div className="flex items-center justify-center gap-6 w-full">
+                      <span className="text-[11px] font-black uppercase tracking-[0.5em]">Apply for Membership</span>
+                      <ArrowRight size={20} className="group-hover:translate-x-3 transition-transform" />
+                    </div>
                   )}
                 </button>
               </div>

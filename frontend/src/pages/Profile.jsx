@@ -190,7 +190,7 @@ const Profile = () => {
     switch (status?.toLowerCase()) {
       case 'pending': return 'text-amber-500 bg-amber-500/10 border-amber-500/20';
       case 'confirmed': return 'text-sky-500 bg-sky-500/10 border-sky-500/20';
-      case 'shipped': return 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20';
+      case 'shipped': return 'text-luxury-gold bg-luxury-gold/10 border-luxury-gold/20';
       case 'delivered': return 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20';
       default: return 'text-slate-400 bg-slate-400/10 border-slate-400/20';
     }
@@ -212,8 +212,8 @@ const Profile = () => {
       
       {/* Premium Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-         <div className="absolute top-[-10%] right-[-5%] w-[60%] h-[60%] bg-blue-600/10 blur-[150px] rounded-full"></div>
-         <div className="absolute bottom-[-10%] left-[-5%] w-[50%] h-[50%] bg-indigo-600/10 blur-[120px] rounded-full"></div>
+         <div className="absolute top-[-10%] right-[-5%] w-[60%] h-[60%] bg-luxury-gold/10 blur-[150px] rounded-full"></div>
+         <div className="absolute bottom-[-10%] left-[-5%] w-[50%] h-[50%] bg-luxury-gold/10 blur-[120px] rounded-full"></div>
          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.02]"></div>
       </div>
 
@@ -222,7 +222,7 @@ const Profile = () => {
         {/* Header Navigation */}
         <div className="flex justify-between items-center mb-12">
            <Link to="/" className="group flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 hover:text-white transition-all">
-              <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-blue-500/50 group-hover:bg-blue-500/10 transition-all shadow-xl">
+              <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-luxury-gold/50 group-hover:bg-luxury-gold/10 transition-all shadow-xl">
                  <ArrowLeft size={16} />
               </div>
               Exit To Sanctuary
@@ -243,12 +243,12 @@ const Profile = () => {
           {/* Sidebar */}
           <div className="lg:col-span-3 space-y-8">
              {/* Profile Spotlight */}
-             <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-1 rounded-[3rem] shadow-2xl group transition-all duration-700 hover:scale-[1.02]">
+             <div className="bg-gradient-to-br from-luxury-gold to-indigo-700 p-1 rounded-[3rem] shadow-2xl group transition-all duration-700 hover:scale-[1.02]">
                 <div className="bg-[#111827] rounded-[2.9rem] p-10 text-center relative overflow-hidden">
-                   <div className="absolute inset-0 bg-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                   <div className="absolute inset-0 bg-luxury-gold/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                    <div className="relative z-10">
-                      <div className="w-28 h-28 rounded-[2.5rem] p-1 bg-gradient-to-tr from-blue-500 to-indigo-400 mx-auto mb-6 shadow-2xl relative">
-                         <div className="w-full h-full rounded-[2.3rem] bg-[#111827] flex items-center justify-center text-4xl font-playfair font-black text-blue-500 italic">
+                      <div className="w-28 h-28 rounded-[2.5rem] p-1 bg-gradient-to-tr from-luxury-gold to-indigo-400 mx-auto mb-6 shadow-2xl relative">
+                         <div className="w-full h-full rounded-[2.3rem] bg-[#111827] flex items-center justify-center text-4xl font-playfair font-black text-luxury-gold italic">
                             {user.username?.[0] || 'U'}
                          </div>
                          <div className="absolute -bottom-1 -right-1 w-9 h-9 bg-emerald-500 rounded-xl border-4 border-[#111827] flex items-center justify-center text-white shadow-xl">
@@ -256,7 +256,7 @@ const Profile = () => {
                          </div>
                       </div>
                       <h2 className="text-2xl font-playfair font-black text-white tracking-tight mb-2 italic uppercase">{user.username}</h2>
-                      <p className="text-[9px] text-blue-400 font-black uppercase tracking-[0.4em] italic bg-blue-400/10 py-1.5 rounded-full inline-block px-4 border border-blue-400/20">Elite Tier Access</p>
+                      <p className="text-[9px] text-luxury-gold font-black uppercase tracking-[0.4em] italic bg-luxury-gold/10 py-1.5 rounded-full inline-block px-4 border border-luxury-gold/20">Elite Tier Access</p>
                    </div>
                 </div>
              </div>
@@ -274,10 +274,10 @@ const Profile = () => {
                         <button 
                           key={item.id} 
                           onClick={() => setActiveSection(item.id)}
-                          className={`w-full flex items-center justify-between px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 group ${activeSection === item.id ? 'bg-blue-600 text-white shadow-[0_15px_30px_rgba(37,99,235,0.3)] transform translate-x-2' : 'text-slate-500 hover:bg-white/5 hover:text-white'}`}
+                          className={`w-full flex items-center justify-between px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 group ${activeSection === item.id ? 'bg-luxury-gold text-white shadow-[0_15px_30px_rgba(37,99,235,0.3)] transform translate-x-2' : 'text-slate-500 hover:bg-white/5 hover:text-white'}`}
                         >
                           <div className="flex items-center gap-4">
-                             <item.icon size={16} className={activeSection === item.id ? 'text-white' : 'group-hover:text-blue-400 transition-colors'} />
+                             <item.icon size={16} className={activeSection === item.id ? 'text-white' : 'group-hover:text-luxury-gold transition-colors'} />
                              {item.label}
                           </div>
                           <ChevronRight size={14} className={activeSection === item.id ? 'opacity-100 translate-x-1' : 'opacity-0 group-hover:opacity-100 transition-all'} />
@@ -297,10 +297,10 @@ const Profile = () => {
                         <button 
                           key={item.id}
                           onClick={() => setActiveSection(item.id)}
-                          className={`w-full flex items-center justify-between px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 group ${activeSection === item.id ? 'bg-blue-600 text-white shadow-[0_15px_30px_rgba(37,99,235,0.3)] transform translate-x-2' : 'text-slate-500 hover:bg-white/5 hover:text-white'}`}
+                          className={`w-full flex items-center justify-between px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 group ${activeSection === item.id ? 'bg-luxury-gold text-white shadow-[0_15px_30px_rgba(37,99,235,0.3)] transform translate-x-2' : 'text-slate-500 hover:bg-white/5 hover:text-white'}`}
                         >
                           <div className="flex items-center gap-4">
-                             <item.icon size={16} className={activeSection === item.id ? 'text-white' : 'group-hover:text-blue-400 transition-colors'} />
+                             <item.icon size={16} className={activeSection === item.id ? 'text-white' : 'group-hover:text-luxury-gold transition-colors'} />
                              {item.label}
                           </div>
                           <ChevronRight size={14} className={activeSection === item.id ? 'opacity-100 translate-x-1' : 'opacity-0 group-hover:opacity-100 transition-all'} />
@@ -325,15 +325,15 @@ const Profile = () => {
                    {activeSection === 'overview' && (
                      <div className="space-y-10">
                         {/* Welcome Spotlight */}
-                        <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/5 backdrop-blur-3xl border border-white/10 p-16 rounded-[4rem] relative overflow-hidden group shadow-2xl">
-                           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-500/10 blur-[150px] rounded-full translate-x-1/3 -translate-y-1/3 group-hover:bg-blue-500/20 transition-all duration-1000"></div>
+                        <div className="bg-gradient-to-br from-luxury-gold/20 to-luxury-gold/5 backdrop-blur-3xl border border-white/10 p-16 rounded-[4rem] relative overflow-hidden group shadow-2xl">
+                           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-luxury-gold/10 blur-[150px] rounded-full translate-x-1/3 -translate-y-1/3 group-hover:bg-luxury-gold/20 transition-all duration-1000"></div>
                            <div className="relative z-10 max-w-2xl">
                               <div className="flex items-center gap-5 mb-10">
-                                 <span className="w-3 h-3 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.8)]"></span>
-                                 <span className="text-[10px] font-black uppercase tracking-[0.8em] text-blue-400">Authenticated Terminal Access</span>
+                                 <span className="w-3 h-3 bg-luxury-gold rounded-full shadow-[0_0_15px_rgba(59,130,246,0.8)]"></span>
+                                 <span className="text-[10px] font-black uppercase tracking-[0.8em] text-luxury-gold">Authenticated Terminal Access</span>
                               </div>
                               <h1 className="text-7xl lg:text-8xl font-playfair font-black text-white leading-none tracking-tighter mb-10 italic">
-                                 The <br /> <span className="not-italic text-blue-500">Registry.</span>
+                                 The <br /> <span className="not-italic text-luxury-gold">Registry.</span>
                               </h1>
                               <p className="text-slate-400 text-sm leading-relaxed uppercase tracking-[0.3em] font-medium max-w-md italic opacity-80">
                                  Welcome back, {user.username}. Your secure horological profile and verified acquisitions are live in this terminal.
@@ -345,11 +345,11 @@ const Profile = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                            {[
                               { label: 'Security Status', value: 'High Fidelity', icon: ShieldCheck, color: 'text-emerald-400' },
-                              { label: 'Member Standing', value: 'Elite Tier', icon: Award, color: 'text-blue-400' },
+                              { label: 'Member Standing', value: 'Elite Tier', icon: Award, color: 'text-luxury-gold' },
                               { label: 'Registry ID', value: user._id?.slice(-8).toUpperCase(), icon: Key, color: 'text-white' },
                            ].map((stat, i) => (
-                              <div key={i} className="bg-white/5 border border-white/10 p-10 rounded-[3rem] text-center hover:border-blue-500/30 hover:bg-white/[0.07] transition-all duration-700 group shadow-lg">
-                                 <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-500 group-hover:scale-110 transition-transform">
+                              <div key={i} className="bg-white/5 border border-white/10 p-10 rounded-[3rem] text-center hover:border-luxury-gold/30 hover:bg-white/[0.07] transition-all duration-700 group shadow-lg">
+                                 <div className="w-14 h-14 bg-luxury-gold/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-luxury-gold group-hover:scale-110 transition-transform">
                                     <stat.icon size={26} />
                                  </div>
                                  <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2">{stat.label}</h3>
@@ -368,7 +368,7 @@ const Profile = () => {
                               {!isEditingProfile ? (
                                 <button 
                                   onClick={() => setIsEditingProfile(true)}
-                                  className="flex items-center gap-3 px-8 py-4 bg-blue-600 text-white rounded-2xl text-[9px] font-black uppercase tracking-[0.4em] hover:scale-105 transition-all shadow-[0_15px_30px_rgba(37,99,235,0.3)]"
+                                  className="flex items-center gap-3 px-8 py-4 bg-luxury-gold text-white rounded-2xl text-[9px] font-black uppercase tracking-[0.4em] hover:scale-105 transition-all shadow-[0_15px_30px_rgba(37,99,235,0.3)]"
                                 >
                                    <Edit3 size={16} /> Update Registry
                                 </button>
@@ -388,7 +388,7 @@ const Profile = () => {
                                     disabled={!isEditingProfile}
                                     value={profileForm.username}
                                     onChange={(e) => setProfileForm({...profileForm, username: e.target.value})}
-                                    className={`w-full px-10 py-6 bg-white/5 border ${isEditingProfile ? 'border-blue-500/50 outline-none ring-2 ring-blue-500/20' : 'border-white/10'} rounded-[2rem] text-sm font-black text-white uppercase tracking-widest transition-all`}
+                                    className={`w-full px-10 py-6 bg-white/5 border ${isEditingProfile ? 'border-luxury-gold/50 outline-none ring-2 ring-luxury-gold/20' : 'border-white/10'} rounded-[2rem] text-sm font-black text-white uppercase tracking-widest transition-all`}
                                  />
                               </div>
                               <div className="space-y-4">
@@ -398,7 +398,7 @@ const Profile = () => {
                                     disabled={!isEditingProfile}
                                     value={profileForm.email}
                                     onChange={(e) => setProfileForm({...profileForm, email: e.target.value})}
-                                    className={`w-full px-10 py-6 bg-white/5 border ${isEditingProfile ? 'border-blue-500/50 outline-none ring-2 ring-blue-500/20' : 'border-white/10'} rounded-[2rem] text-sm font-black text-slate-400 italic transition-all`}
+                                    className={`w-full px-10 py-6 bg-white/5 border ${isEditingProfile ? 'border-luxury-gold/50 outline-none ring-2 ring-luxury-gold/20' : 'border-white/10'} rounded-[2rem] text-sm font-black text-slate-400 italic transition-all`}
                                  />
                               </div>
                            </form>
@@ -410,7 +410,7 @@ const Profile = () => {
                      <div className="space-y-12">
                         <div className="flex items-end justify-between px-10">
                            <div>
-                              <span className="text-blue-400 text-[10px] font-black uppercase tracking-[0.8em] mb-4 block italic">Acquisition Archives</span>
+                              <span className="text-luxury-gold text-[10px] font-black uppercase tracking-[0.8em] mb-4 block italic">Acquisition Archives</span>
                               <h2 className="text-6xl font-playfair font-black text-white tracking-tighter italic">Collections.</h2>
                            </div>
                            <div className="text-right bg-white/5 p-6 rounded-[2.5rem] border border-white/10 shadow-2xl">
@@ -421,18 +421,18 @@ const Profile = () => {
 
                         {loadingOrders ? (
                            <div className="flex flex-col items-center justify-center py-40 bg-white/5 rounded-[4rem] border border-white/10 shadow-2xl">
-                              <div className="w-14 h-14 border-t-2 border-blue-500 rounded-full animate-spin mb-10 shadow-[0_0_20px_rgba(59,130,246,0.3)]" />
+                              <div className="w-14 h-14 border-t-2 border-luxury-gold rounded-full animate-spin mb-10 shadow-[0_0_20px_rgba(59,130,246,0.3)]" />
                               <p className="text-[10px] font-black uppercase tracking-[0.6em] text-slate-600">Consulting Private Archives...</p>
                            </div>
                         ) : orders.length === 0 ? (
                            <div className="bg-white/5 p-24 rounded-[4rem] border border-white/10 text-center shadow-2xl backdrop-blur-3xl relative overflow-hidden group">
-                              <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                              <Package size={64} className="mx-auto text-blue-500/20 mb-10 group-hover:scale-110 transition-transform" strokeWidth={1} />
+                              <div className="absolute inset-0 bg-luxury-gold/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                              <Package size={64} className="mx-auto text-luxury-gold/20 mb-10 group-hover:scale-110 transition-transform" strokeWidth={1} />
                               <h3 className="text-3xl font-playfair font-black text-white mb-6 italic tracking-tight">The Vault is Silent.</h3>
                               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.4em] mb-12 max-w-sm mx-auto leading-loose italic opacity-80">
                                  No acquisitions have been recorded under this registry. Your journey into horological excellence begins today.
                               </p>
-                              <Link to="/products" className="inline-flex px-14 py-5 bg-blue-600 text-white rounded-[2rem] text-[11px] font-black uppercase tracking-[0.6em] shadow-[0_20px_50px_rgba(37,99,235,0.3)] hover:scale-105 transition-all">
+                              <Link to="/products" className="inline-flex px-14 py-5 bg-luxury-gold text-white rounded-[2rem] text-[11px] font-black uppercase tracking-[0.6em] shadow-[0_20px_50px_rgba(37,99,235,0.3)] hover:scale-105 transition-all">
                                  Explore The Catalog
                               </Link>
                            </div>
@@ -444,11 +444,11 @@ const Profile = () => {
                                     initial={{ opacity: 0, y: 30 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: idx * 0.1 }}
-                                    className="bg-white/5 rounded-[4rem] border border-white/10 overflow-hidden hover:border-blue-500/30 transition-all duration-700 group shadow-2xl backdrop-blur-2xl"
+                                    className="bg-white/5 rounded-[4rem] border border-white/10 overflow-hidden hover:border-luxury-gold/30 transition-all duration-700 group shadow-2xl backdrop-blur-2xl"
                                  >
                                     <div className="p-12 border-b border-white/5 bg-white/[0.02] flex flex-wrap justify-between items-center gap-12">
                                        <div className="flex items-center gap-8">
-                                          <div className="w-16 h-16 bg-white text-black rounded-[1.8rem] flex items-center justify-center font-playfair text-xl font-black italic shadow-2xl group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
+                                          <div className="w-16 h-16 bg-white text-black rounded-[1.8rem] flex items-center justify-center font-playfair text-xl font-black italic shadow-2xl group-hover:bg-luxury-gold group-hover:text-white transition-all duration-500">
                                              #{order._id.slice(-4).toUpperCase()}
                                           </div>
                                           <div>
@@ -464,7 +464,7 @@ const Profile = () => {
                                              </div>
                                           </div>
                                           <div className="text-right">
-                                             <p className="text-[9px] uppercase tracking-[0.5em] font-black text-blue-400 mb-3 italic">Final Valuation</p>
+                                             <p className="text-[9px] uppercase tracking-[0.5em] font-black text-luxury-gold mb-3 italic">Final Valuation</p>
                                              <p className="text-4xl font-black text-white tracking-tighter">${formatPrice(order.totalAmount)}</p>
                                           </div>
                                        </div>
@@ -472,11 +472,11 @@ const Profile = () => {
                                     <div className="p-12 space-y-12">
                                        {order.items.map((item, i) => (
                                           <div key={i} className="flex items-center gap-12 group/item">
-                                             <div className="w-24 h-24 rounded-[2.5rem] overflow-hidden bg-white/5 border border-white/10 p-3 shrink-0 group-hover/item:border-blue-500/50 transition-all duration-500 shadow-2xl">
+                                             <div className="w-24 h-24 rounded-[2.5rem] overflow-hidden bg-white/5 border border-white/10 p-3 shrink-0 group-hover/item:border-luxury-gold/50 transition-all duration-500 shadow-2xl">
                                                 <img src={item.productId?.images?.[0]} alt="" className="w-full h-full object-cover rounded-[2rem] grayscale group-hover/item:grayscale-0 transition-all duration-700" />
                                              </div>
                                              <div className="flex-grow">
-                                                <h4 className="text-3xl font-playfair font-black text-white group-hover/item:text-blue-400 transition-colors italic tracking-tight leading-none mb-3">{item.productId?.name}</h4>
+                                                <h4 className="text-3xl font-playfair font-black text-white group-hover/item:text-luxury-gold transition-colors italic tracking-tight leading-none mb-3">{item.productId?.name}</h4>
                                                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.4em] italic opacity-80">Certified Asset • Security Access x{item.quantity}</p>
                                              </div>
                                              <div className="text-right">
@@ -491,7 +491,7 @@ const Profile = () => {
                                        </div>
                                        <button 
                                           onClick={() => setSelectedOrder(order)}
-                                          className="text-[10px] font-black text-blue-500 uppercase tracking-[0.5em] hover:text-white transition-all flex items-center gap-2 group/btn"
+                                          className="text-[10px] font-black text-luxury-gold uppercase tracking-[0.5em] hover:text-white transition-all flex items-center gap-2 group/btn"
                                        >
                                           View Acquisition Details <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
                                        </button>
@@ -506,7 +506,7 @@ const Profile = () => {
                    {activeSection === 'address' && (
                      <div className="space-y-12">
                         <div className="flex items-center gap-8 px-10">
-                           <div className="w-20 h-20 bg-blue-600/10 border border-blue-600/20 rounded-[2.5rem] flex items-center justify-center text-blue-500 shadow-2xl">
+                           <div className="w-20 h-20 bg-luxury-gold/10 border border-luxury-gold/20 rounded-[2.5rem] flex items-center justify-center text-luxury-gold shadow-2xl">
                               <MapPin size={36} />
                            </div>
                            <div>
@@ -524,14 +524,14 @@ const Profile = () => {
                               {!isEditingAddress ? (
                                 <button 
                                   onClick={() => setIsEditingAddress(true)}
-                                  className="flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-[9px] font-black text-blue-400 uppercase tracking-[0.4em] hover:bg-blue-600 hover:text-white transition-all shadow-xl"
+                                  className="flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-[9px] font-black text-luxury-gold uppercase tracking-[0.4em] hover:bg-luxury-gold hover:text-white transition-all shadow-xl"
                                 >
                                    <Edit3 size={16} /> Configure Address
                                 </button>
                               ) : (
                                 <div className="flex gap-4">
                                    <button onClick={() => setIsEditingAddress(false)} className="px-6 py-4 bg-white/5 text-white rounded-2xl text-[9px] font-black uppercase tracking-[0.3em] hover:bg-white/10 transition-all">Cancel</button>
-                                   <button onClick={handleAddressUpdate} className="px-8 py-4 bg-blue-600 text-white rounded-2xl text-[9px] font-black uppercase tracking-[0.3em] shadow-xl hover:scale-105 transition-all">Save Logistics</button>
+                                   <button onClick={handleAddressUpdate} className="px-8 py-4 bg-luxury-gold text-white rounded-2xl text-[9px] font-black uppercase tracking-[0.3em] shadow-xl hover:scale-105 transition-all">Save Logistics</button>
                                 </div>
                               )}
                            </div>
@@ -543,7 +543,7 @@ const Profile = () => {
                                     disabled={!isEditingAddress}
                                     value={addressForm.street}
                                     onChange={(e) => setAddressForm({...addressForm, street: e.target.value})}
-                                    className="w-full px-10 py-6 bg-white/5 border border-white/10 rounded-[2rem] text-sm font-black text-white tracking-widest disabled:opacity-50 outline-none focus:border-blue-500/50"
+                                    className="w-full px-10 py-6 bg-white/5 border border-white/10 rounded-[2rem] text-sm font-black text-white tracking-widest disabled:opacity-50 outline-none focus:border-luxury-gold/50"
                                  />
                               </div>
                               <div className="space-y-4">
@@ -552,7 +552,7 @@ const Profile = () => {
                                     disabled={!isEditingAddress}
                                     value={addressForm.city}
                                     onChange={(e) => setAddressForm({...addressForm, city: e.target.value})}
-                                    className="w-full px-10 py-6 bg-white/5 border border-white/10 rounded-[2rem] text-sm font-black text-white tracking-widest disabled:opacity-50 outline-none focus:border-blue-500/50"
+                                    className="w-full px-10 py-6 bg-white/5 border border-white/10 rounded-[2rem] text-sm font-black text-white tracking-widest disabled:opacity-50 outline-none focus:border-luxury-gold/50"
                                  />
                               </div>
                               <div className="space-y-4">
@@ -561,7 +561,7 @@ const Profile = () => {
                                     disabled={!isEditingAddress}
                                     value={addressForm.zip}
                                     onChange={(e) => setAddressForm({...addressForm, zip: e.target.value})}
-                                    className="w-full px-10 py-6 bg-white/5 border border-white/10 rounded-[2rem] text-sm font-black text-white tracking-widest disabled:opacity-50 outline-none focus:border-blue-500/50"
+                                    className="w-full px-10 py-6 bg-white/5 border border-white/10 rounded-[2rem] text-sm font-black text-white tracking-widest disabled:opacity-50 outline-none focus:border-luxury-gold/50"
                                  />
                               </div>
                            </form>
@@ -572,7 +572,7 @@ const Profile = () => {
                    {activeSection === 'security' && (
                      <div className="bg-white/5 border border-white/10 p-16 rounded-[4rem] backdrop-blur-3xl shadow-2xl relative overflow-hidden">
                         <div className="flex items-center gap-8 mb-20 relative z-10">
-                           <div className="w-20 h-20 bg-indigo-600/10 border border-indigo-600/20 rounded-[2.5rem] flex items-center justify-center text-indigo-400 shadow-2xl">
+                           <div className="w-20 h-20 bg-luxury-gold/10 border border-luxury-gold/20 rounded-[2.5rem] flex items-center justify-center text-indigo-400 shadow-2xl">
                               <Lock size={36} />
                            </div>
                            <div>
@@ -583,7 +583,7 @@ const Profile = () => {
                         
                         <div className="space-y-8 relative z-10">
                            {!isChangingPassword ? (
-                              <div className="p-12 bg-white/[0.03] border border-white/10 rounded-[3.5rem] flex justify-between items-center group hover:border-indigo-500/50 transition-all duration-700 shadow-xl">
+                              <div className="p-12 bg-white/[0.03] border border-white/10 rounded-[3.5rem] flex justify-between items-center group hover:border-luxury-gold/50 transition-all duration-700 shadow-xl">
                                  <div className="flex items-center gap-8">
                                     <div className="w-14 h-14 bg-white/5 rounded-[1.5rem] flex items-center justify-center text-slate-400 group-hover:text-indigo-400 group-hover:bg-indigo-400/5 transition-all">
                                        <Key size={24} />
@@ -593,17 +593,17 @@ const Profile = () => {
                                        <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-2 italic font-medium">Last Authenticated Recently</p>
                                     </div>
                                  </div>
-                                 <button onClick={() => setIsChangingPassword(true)} className="px-10 py-4 bg-white text-black rounded-2xl text-[9px] font-black uppercase tracking-[0.5em] hover:bg-indigo-600 hover:text-white transition-all shadow-2xl">Rotate Access Key</button>
+                                 <button onClick={() => setIsChangingPassword(true)} className="px-10 py-4 bg-white text-black rounded-2xl text-[9px] font-black uppercase tracking-[0.5em] hover:bg-luxury-gold hover:text-white transition-all shadow-2xl">Rotate Access Key</button>
                               </div>
                            ) : (
                               <motion.form 
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 onSubmit={handlePasswordChange}
-                                className="p-12 bg-white/[0.05] border border-blue-500/30 rounded-[3.5rem] space-y-8 shadow-2xl"
+                                className="p-12 bg-white/[0.05] border border-luxury-gold/30 rounded-[3.5rem] space-y-8 shadow-2xl"
                               >
                                  <div className="flex justify-between items-center mb-4">
-                                    <h4 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.5em]">Rotating Security Key</h4>
+                                    <h4 className="text-[10px] font-black text-luxury-gold uppercase tracking-[0.5em]">Rotating Security Key</h4>
                                     <button type="button" onClick={() => setIsChangingPassword(false)}><X size={18} /></button>
                                  </div>
                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -613,7 +613,7 @@ const Profile = () => {
                                           type="password"
                                           value={passwordForm.oldPassword}
                                           onChange={(e) => setPasswordForm({...passwordForm, oldPassword: e.target.value})}
-                                          className="w-full px-8 py-5 bg-black/20 border border-white/10 rounded-2xl text-white outline-none focus:border-blue-500"
+                                          className="w-full px-8 py-5 bg-black/20 border border-white/10 rounded-2xl text-white outline-none focus:border-luxury-gold"
                                           placeholder="••••••••"
                                        />
                                     </div>
@@ -623,16 +623,16 @@ const Profile = () => {
                                           type="password"
                                           value={passwordForm.newPassword}
                                           onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
-                                          className="w-full px-8 py-5 bg-black/20 border border-white/10 rounded-2xl text-white outline-none focus:border-blue-500"
+                                          className="w-full px-8 py-5 bg-black/20 border border-white/10 rounded-2xl text-white outline-none focus:border-luxury-gold"
                                           placeholder="••••••••"
                                        />
                                     </div>
                                  </div>
-                                 <button type="submit" className="w-full py-5 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.5em] shadow-xl hover:scale-[1.01] transition-all">Update Security Key</button>
+                                 <button type="submit" className="w-full py-5 bg-luxury-gold text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.5em] shadow-xl hover:scale-[1.01] transition-all">Update Security Key</button>
                               </motion.form>
                            )}
 
-                           <div className="p-12 bg-white/[0.03] border border-white/10 rounded-[3.5rem] flex justify-between items-center group hover:border-indigo-500/50 transition-all duration-700 opacity-60 cursor-not-allowed shadow-xl">
+                           <div className="p-12 bg-white/[0.03] border border-white/10 rounded-[3.5rem] flex justify-between items-center group hover:border-luxury-gold/50 transition-all duration-700 opacity-60 cursor-not-allowed shadow-xl">
                               <div className="flex items-center gap-8">
                                  <div className="w-14 h-14 bg-white/5 rounded-[1.5rem] flex items-center justify-center text-slate-400">
                                     <ShieldCheck size={24} />
@@ -654,7 +654,7 @@ const Profile = () => {
                      <div className="space-y-12">
                         <div className="flex items-center justify-between px-10">
                            <div>
-                              <span className="text-blue-400 text-[10px] font-black uppercase tracking-[0.8em] mb-4 block italic underline decoration-blue-500/30 decoration-2 underline-offset-8">Curated Assets</span>
+                              <span className="text-luxury-gold text-[10px] font-black uppercase tracking-[0.8em] mb-4 block italic underline decoration-luxury-gold/30 decoration-2 underline-offset-8">Curated Assets</span>
                               <h2 className="text-5xl font-playfair font-black text-white tracking-tighter italic leading-none">The Registry.</h2>
                            </div>
                            <div className="bg-white/5 px-8 py-5 rounded-3xl border border-white/10 text-right">
@@ -665,12 +665,12 @@ const Profile = () => {
 
                         {wishlist.length === 0 ? (
                            <div className="bg-white/5 p-32 rounded-[5rem] border border-white/10 text-center shadow-3xl backdrop-blur-3xl relative overflow-hidden group">
-                              <Heart size={80} className="mx-auto text-blue-500/20 mb-12" strokeWidth={1} />
+                              <Heart size={80} className="mx-auto text-luxury-gold/20 mb-12" strokeWidth={1} />
                               <h3 className="text-4xl font-playfair font-black text-white mb-8 italic tracking-tighter leading-none">Registry Empty.</h3>
                               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.5em] max-w-sm mx-auto leading-loose mb-16 italic opacity-80">
                                  Your horological wishlist registry is currently empty. Start curating your dream collection.
                               </p>
-                              <Link to="/products" className="inline-flex px-16 py-6 bg-blue-600 text-white rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.7em] shadow-2xl hover:scale-105 transition-all">
+                              <Link to="/products" className="inline-flex px-16 py-6 bg-luxury-gold text-white rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.7em] shadow-2xl hover:scale-105 transition-all">
                                  Explore Catalog
                               </Link>
                            </div>
@@ -682,7 +682,7 @@ const Profile = () => {
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: idx * 0.1 }}
-                                    className="bg-white/5 border border-white/10 rounded-[3rem] overflow-hidden group hover:border-blue-500/30 transition-all duration-700 shadow-2xl backdrop-blur-xl"
+                                    className="bg-white/5 border border-white/10 rounded-[3rem] overflow-hidden group hover:border-luxury-gold/30 transition-all duration-700 shadow-2xl backdrop-blur-xl"
                                  >
                                     <div className="relative h-64 overflow-hidden">
                                        <img src={product.images?.[0]} alt={product.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000" />
@@ -694,13 +694,13 @@ const Profile = () => {
                                           <Trash2 size={18} className="group-hover/trash:rotate-12 transition-transform" />
                                        </button>
                                        <div className="absolute bottom-6 left-10">
-                                          <p className="text-[9px] font-black text-blue-400 uppercase tracking-[0.5em] mb-2 italic">{product.brand}</p>
+                                          <p className="text-[9px] font-black text-luxury-gold uppercase tracking-[0.5em] mb-2 italic">{product.brand}</p>
                                           <h4 className="text-2xl font-playfair font-black text-white italic tracking-tight">{product.name}</h4>
                                        </div>
                                     </div>
                                     <div className="p-10 flex justify-between items-center">
                                        <p className="text-xl font-black text-white tracking-tighter">${formatPrice(product.price)}</p>
-                                       <Link to={`/product/${product._id}`} className="px-8 py-3.5 bg-white/10 text-white rounded-2xl text-[9px] font-black uppercase tracking-[0.4em] hover:bg-blue-600 transition-all">View Asset</Link>
+                                       <Link to={`/product/${product._id}`} className="px-8 py-3.5 bg-white/10 text-white rounded-2xl text-[9px] font-black uppercase tracking-[0.4em] hover:bg-luxury-gold transition-all">View Asset</Link>
                                     </div>
                                  </motion.div>
                               ))}
@@ -711,20 +711,20 @@ const Profile = () => {
 
                    {activeSection === 'support' && (
                      <div className="bg-white/5 border border-white/10 p-24 rounded-[5rem] backdrop-blur-3xl shadow-3xl text-center relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
-                        <Phone size={64} className="mx-auto text-blue-500/30 mb-12 group-hover:scale-110 transition-transform" strokeWidth={1} />
-                        <h3 className="text-5xl font-playfair font-black text-white mb-10 italic tracking-tighter leading-none">Private <br/> <span className="not-italic text-blue-600">Concierge.</span></h3>
+                        <div className="absolute top-0 right-0 w-96 h-96 bg-luxury-gold/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                        <Phone size={64} className="mx-auto text-luxury-gold/30 mb-12 group-hover:scale-110 transition-transform" strokeWidth={1} />
+                        <h3 className="text-5xl font-playfair font-black text-white mb-10 italic tracking-tighter leading-none">Private <br/> <span className="not-italic text-luxury-gold">Concierge.</span></h3>
                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.5em] leading-loose mb-16 italic opacity-80 max-w-md mx-auto">
                            For private inquiries, bespoke requests, or secure logistics assistance, our dedicated concierge team is available 24/7.
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                            <div className="p-12 bg-white/5 border border-white/10 rounded-[3.5rem] text-center group hover:bg-white hover:text-black transition-all duration-500 shadow-2xl">
                               <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 group-hover:text-black/50 transition-colors">Direct Inquiry</p>
-                              <p className="text-[10px] font-black text-blue-400 tracking-[0.3em] group-hover:text-blue-600 transition-colors uppercase">CONCIERGE@MAISONLUXE.COM</p>
+                              <p className="text-[10px] font-black text-luxury-gold tracking-[0.3em] group-hover:text-luxury-gold transition-colors uppercase">CONCIERGE@MAISONLUXE.COM</p>
                            </div>
                            <div className="p-12 bg-white/5 border border-white/10 rounded-[3.5rem] text-center group hover:bg-white hover:text-black transition-all duration-500 shadow-2xl">
                               <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 group-hover:text-black/50 transition-colors">Secure Hotline</p>
-                              <p className="text-[10px] font-black text-blue-400 tracking-[0.3em] group-hover:text-blue-600 transition-colors uppercase">+91 (800) LUXE-777</p>
+                              <p className="text-[10px] font-black text-luxury-gold tracking-[0.3em] group-hover:text-luxury-gold transition-colors uppercase">+91 (800) LUXE-777</p>
                            </div>
                         </div>
                      </div>
@@ -754,7 +754,7 @@ const Profile = () => {
                  {/* Modal Header */}
                  <div className="p-10 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
                     <div className="flex items-center gap-6">
-                       <div className="w-14 h-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center font-playfair text-xl font-black italic shadow-xl">
+                       <div className="w-14 h-14 bg-luxury-gold text-white rounded-2xl flex items-center justify-center font-playfair text-xl font-black italic shadow-xl">
                           #{selectedOrder._id.slice(-4).toUpperCase()}
                        </div>
                        <div>
@@ -772,17 +772,17 @@ const Profile = () => {
                     {/* Logistics & Status */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                        <div className="bg-white/5 p-8 rounded-3xl border border-white/5">
-                          <p className="text-[8px] uppercase tracking-[0.4em] font-black text-slate-500 mb-4 flex items-center gap-2"><MapPin size={12} className="text-blue-500"/> Logistics Center</p>
+                          <p className="text-[8px] uppercase tracking-[0.4em] font-black text-slate-500 mb-4 flex items-center gap-2"><MapPin size={12} className="text-luxury-gold"/> Logistics Center</p>
                           <p className="text-[11px] text-white font-medium leading-relaxed italic opacity-80">{selectedOrder.shippingAddress || 'Verified Destination Registry'}</p>
                        </div>
                        <div className="bg-white/5 p-8 rounded-3xl border border-white/5">
-                          <p className="text-[8px] uppercase tracking-[0.4em] font-black text-slate-500 mb-4 flex items-center gap-2"><Package size={12} className="text-blue-500"/> Acquisition Status</p>
+                          <p className="text-[8px] uppercase tracking-[0.4em] font-black text-slate-500 mb-4 flex items-center gap-2"><Package size={12} className="text-luxury-gold"/> Acquisition Status</p>
                           <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusColor(selectedOrder.status)}`}>
                              {selectedOrder.status}
                           </span>
                        </div>
                        <div className="bg-white/5 p-8 rounded-3xl border border-white/5 text-right">
-                          <p className="text-[8px] uppercase tracking-[0.4em] font-black text-blue-400 mb-4">Final Valuation</p>
+                          <p className="text-[8px] uppercase tracking-[0.4em] font-black text-luxury-gold mb-4">Final Valuation</p>
                           <p className="text-3xl font-black text-white tracking-tighter">${formatPrice(selectedOrder.totalAmount)}</p>
                        </div>
                     </div>
@@ -812,11 +812,11 @@ const Profile = () => {
                  {/* Modal Footer */}
                  <div className="p-10 border-t border-white/5 flex justify-between items-center">
                     <div className="flex items-center gap-3 text-[9px] font-black text-slate-500 uppercase tracking-widest">
-                       <Award size={16} className="text-blue-500" /> Authorized Manifest v2.1
+                       <Award size={16} className="text-luxury-gold" /> Authorized Manifest v2.1
                     </div>
                     <button 
                        onClick={() => downloadManifest(selectedOrder)}
-                       className="px-10 py-4 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:bg-blue-500 transition-all shadow-2xl"
+                       className="px-10 py-4 bg-luxury-gold text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:bg-luxury-gold transition-all shadow-2xl"
                     >
                        Download Manifest
                     </button>

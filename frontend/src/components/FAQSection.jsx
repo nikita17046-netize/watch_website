@@ -10,11 +10,6 @@ const FAQSection = () => {
   const [activeIndex, setActiveIndex] = useState(null);
   const location = useLocation();
 
-  // Only show on the Home page
-  if (location.pathname !== '/') {
-    return null;
-  }
-
   useEffect(() => {
     const fetchFaqs = async () => {
       try {
@@ -29,6 +24,11 @@ const FAQSection = () => {
     };
     fetchFaqs();
   }, []);
+
+  // Only show on the Home page
+  if (location.pathname !== '/') {
+    return null;
+  }
 
   if (loading && faqs.length === 0) return <div className="py-20 text-center animate-pulse text-slate-300 font-black uppercase tracking-widest text-[10px]">Synchronizing Registry...</div>;
   if (faqs.length === 0 && !loading) return null;

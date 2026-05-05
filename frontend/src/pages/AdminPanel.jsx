@@ -23,8 +23,8 @@ const StatusBadge = ({ status, type = 'order' }) => {
          'cancelled': { icon: <AlertCircle size={12} />, color: 'bg-rose-50 text-rose-600 border-rose-100' },
          Pending: { icon: <Clock size={12} />, color: 'bg-amber-50 text-amber-600 border-amber-100' },
          'pending': { icon: <Clock size={12} />, color: 'bg-amber-50 text-amber-600 border-amber-100' },
-         Shipped: { icon: <Truck size={12} />, color: 'bg-indigo-50 text-indigo-600 border-indigo-100' },
-         'shipped': { icon: <Truck size={12} />, color: 'bg-indigo-50 text-indigo-600 border-indigo-100' },
+         Shipped: { icon: <Truck size={12} />, color: 'bg-indigo-50 text-luxury-gold border-indigo-100' },
+         'shipped': { icon: <Truck size={12} />, color: 'bg-indigo-50 text-luxury-gold border-indigo-100' },
          Processing: { icon: <Activity size={12} />, color: 'bg-blue-50 text-blue-600 border-blue-100' },
          'processing': { icon: <Activity size={12} />, color: 'bg-blue-50 text-blue-600 border-blue-100' },
       },
@@ -63,6 +63,7 @@ const AdminPanel = () => {
    const [products, setProducts] = useState([]);
    const [users, setUsers] = useState([]);
    const [orders, setOrders] = useState([]);
+   const [inquiries, setInquiries] = useState([]);
    const [loading, setLoading] = useState(true);
    const [selectedCategory, setSelectedCategory] = useState('All');
    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -151,12 +152,19 @@ const AdminPanel = () => {
       // 2. Fetch Other Data in Background (Non-blocking)
       const fetchBackground = async () => {
          try {
-            const [productsRes, usersRes, ordersRes, faqsRes] = await Promise.allSettled([
-               API.get('/product/get-product'),
+            const [productsRes, usersRes, ordersRes, faqsRes, inquiriesRes] = await Promise.allSettled([
+               API.get('/product/all'),
                API.get('/admin/users'),
                API.get('/admin/orders'),
-               API.get('/admin/faqs')
+               API.get('/admin/faqs'),
+               API.get('/contact/all')
             ]);
+
+            if (productsRes.status === 'fulfilled') setProducts(productsRes.value.data.products || []);
+            if (usersRes.status === 'fulfilled') setUsers(usersRes.value.data.users || []);
+            if (ordersRes.status === 'fulfilled') setOrders(ordersRes.value.data.orders || []);
+            if (faqsRes.status === 'fulfilled') setFaqs(faqsRes.value.data || []);
+            if (inquiriesRes.status === 'fulfilled') setInquiries(inquiriesRes.value.data || []);
 
             if (productsRes.status === 'fulfilled') setProducts(productsRes.value.data.products || []);
             if (usersRes.status === 'fulfilled') setUsers(usersRes.value.data.users || usersRes.value.data || []);
@@ -191,21 +199,42 @@ const AdminPanel = () => {
       }
    };
 
-   const handleAddProduct = async (e) => {
-      e.preventDefault();
-      try {
-         await API.post('/product/add', newProduct);
-         toast.success('Product Asset Authorized');
-         setIsAddModalOpen(false);
-         setNewProduct({
-            name: '', description: '', stock: 0, price: 0, discount: 0,
-            isNewProduct: true, sku: '', images: [''], brand: '', category: ''
-         });
-         fetchAllData();
-      } catch (err) {
-         toast.error('Injection failed');
-      }
-   };
+    const handleAddProduct = async (e) => {
+       e.preventDefault();
+       
+       // Client-side validation
+       if (!newProduct.name || newProduct.name.length < 3) {
+          return toast.error('Name must be at least 3 characters');
+       }
+       if (!newProduct.description || newProduct.description.length < 10) {
+          return toast.error('Description must be at least 10 characters');
+       }
+       if (!newProduct.sku) {
+          return toast.error('Product SKU is required');
+       }
+       if (!newProduct.brand) {
+          return toast.error('Boutique Brand is required');
+       }
+       if (!newProduct.category) {
+          return toast.error('Registry Category is required');
+       }
+       if (!newProduct.images[0]) {
+          return toast.error('Gallery Media URL is required');
+       }
+
+       try {
+          const res = await API.post('/product/add', newProduct);
+          toast.success(res.data.message || 'Product Asset Authorized');
+          setIsAddModalOpen(false);
+          setNewProduct({
+             name: '', description: '', stock: 0, price: 0, discount: 0,
+             isNewProduct: true, sku: '', images: [''], brand: '', category: ''
+          });
+          fetchAllData();
+       } catch (err) {
+          toast.error(err.response?.data?.message || 'Injection failed');
+       }
+    };
 
    const [supportTickets, setSupportTickets] = useState([
       { id: 'TK-892', user: 'Rahul Sharma', subject: 'Payment Verification Pending', priority: 'High', date: '2 hours ago' },
@@ -334,7 +363,7 @@ const AdminPanel = () => {
          <aside className={`w-72 flex flex-col fixed h-screen z-50 shadow-sm border-r transition-colors duration-500 ${isDarkMode ? 'border-white/5 bg-[#0A0C10]' : 'border-slate-200 bg-[#1C2536]'}`}>
             <div className="p-8">
                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <div className="w-10 h-10 bg-luxury-gold rounded-xl flex items-center justify-center shadow-lg">
                      <LayoutDashboard className="text-white" size={24} />
                   </div>
                   <div>
@@ -363,7 +392,7 @@ const AdminPanel = () => {
                      <Link
                         key={item.id}
                         to={item.link}
-                        className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-200 ${item.special ? 'text-indigo-400 border-l-4 border-indigo-500 bg-indigo-500/5' : activeTab === item.id ? 'text-emerald-400 bg-white/5 border-l-4 border-emerald-400 pl-3' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
+                        className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-200 ${item.special ? 'text-indigo-400 border-l-4 border-luxury-gold bg-luxury-gold/5' : activeTab === item.id ? 'text-luxury-gold bg-white/5 border-l-4 border-luxury-gold pl-3' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
                      >
                         <item.icon size={18} />
                         {item.label}
@@ -372,7 +401,7 @@ const AdminPanel = () => {
                      <button
                         key={item.id}
                         onClick={() => setActiveTab(item.id)}
-                        className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-200 ${activeTab === item.id ? 'text-emerald-400 bg-white/5 border-l-4 border-emerald-400 pl-3' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
+                        className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-200 ${activeTab === item.id ? 'text-luxury-gold bg-white/5 border-l-4 border-luxury-gold pl-3' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
                      >
                         <item.icon size={18} />
                         {item.label}
@@ -399,13 +428,13 @@ const AdminPanel = () => {
             <header className={`h-16 px-8 flex items-center justify-between sticky top-0 z-40 transition-colors duration-500 ${isDarkMode ? 'bg-[#0F1115]/80 backdrop-blur-md border-b border-white/5' : 'bg-white border-b border-slate-200'}`}>
                <div className="flex items-center gap-4 group">
                   <div className="relative flex items-center">
-                     <Search size={16} className={`absolute left-3 transition-colors ${searchTerm ? 'text-indigo-500' : 'text-slate-400 group-focus-within:text-indigo-500'}`} />
+                     <Search size={16} className={`absolute left-3 transition-colors ${searchTerm ? 'text-luxury-gold' : 'text-slate-400 group-focus-within:text-luxury-gold'}`} />
                      <input
                         type="text"
                         placeholder="Global search across all registries..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className={`text-[11px] font-bold rounded-xl py-2.5 pl-10 pr-4 focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-200 outline-none w-80 transition-all placeholder:text-slate-400 placeholder:font-medium ${isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-100 text-slate-800'}`}
+                        className={`text-[11px] font-bold rounded-xl py-2.5 pl-10 pr-4 focus:ring-4 focus:ring-luxury-gold/5 focus:border-indigo-200 outline-none w-80 transition-all placeholder:text-slate-400 placeholder:font-medium ${isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-100 text-slate-800'}`}
                      />
                      {searchTerm && (
                         <button onClick={() => setSearchTerm("")} className="absolute right-3 text-slate-300 hover:text-slate-500"><X size={14} /></button>
@@ -418,14 +447,14 @@ const AdminPanel = () => {
                      {/* Theme Toggle */}
                      <button
                         onClick={() => setIsDarkMode(!isDarkMode)}
-                        className={`p-2.5 rounded-xl border transition-all duration-300 flex items-center gap-2 ${isDarkMode ? 'bg-white/5 border-white/10 text-amber-400 hover:bg-white/10' : 'bg-slate-50 border-slate-100 text-indigo-600 hover:bg-indigo-50'}`}
+                        className={`p-2.5 rounded-xl border transition-all duration-300 flex items-center gap-2 ${isDarkMode ? 'bg-white/5 border-white/10 text-amber-400 hover:bg-white/10' : 'bg-slate-50 border-slate-100 text-luxury-gold hover:bg-indigo-50'}`}
                      >
                         {isDarkMode ? <motion.div animate={{ rotate: 360 }} transition={{ duration: 0.5 }}><Zap size={18} /></motion.div> : <motion.div animate={{ rotate: 0 }}><Compass size={18} /></motion.div>}
                         <span className="text-[9px] font-black uppercase tracking-widest">{isDarkMode ? 'Night Vision' : 'Daylight'}</span>
                      </button>
 
                      <Link to="/logistics" className="flex items-center gap-3 group ml-2">
-                        <div className={`w-8 h-8 flex items-center justify-center rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm ${isDarkMode ? 'bg-white/5 text-indigo-400 border border-white/5' : 'bg-indigo-50 text-indigo-600'}`}>
+                        <div className={`w-8 h-8 flex items-center justify-center rounded-lg group-hover:bg-luxury-gold group-hover:text-white transition-all shadow-sm ${isDarkMode ? 'bg-white/5 text-indigo-400 border border-white/5' : 'bg-indigo-50 text-luxury-gold'}`}>
                            <Truck size={16} />
                         </div>
                      </Link>
@@ -452,9 +481,9 @@ const AdminPanel = () => {
                      >
                         <div className="relative w-20 h-20">
                            <div className="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
-                           <div className="absolute inset-0 border-4 border-t-indigo-600 rounded-full animate-spin"></div>
+                           <div className="absolute inset-0 border-4 border-t-luxury-gold rounded-full animate-spin"></div>
                         </div>
-                        <p className="text-[11px] font-black uppercase tracking-[1em] text-indigo-600 animate-pulse">Syncing Protocols</p>
+                        <p className="text-[11px] font-black uppercase tracking-[1em] text-luxury-gold animate-pulse">Syncing Protocols</p>
                      </motion.div>
                   ) : (
                      <motion.div
@@ -467,9 +496,9 @@ const AdminPanel = () => {
                               <div className="flex items-center justify-between">
                                  <div>
                                     <h2 className="text-4xl font-black text-slate-800 tracking-tight uppercase italic leading-none">Global Intelligence</h2>
-                                    <p className="text-[11px] text-indigo-600 font-black uppercase tracking-[0.4em] mt-3 animate-pulse flex items-center gap-2"><Sparkles size={14} /> System Core Operational</p>
+                                    <p className="text-[11px] text-luxury-gold font-black uppercase tracking-[0.4em] mt-3 animate-pulse flex items-center gap-2"><Sparkles size={14} /> System Core Operational</p>
                                  </div>
-                                 <button className="px-10 py-5 bg-indigo-600 text-white rounded-[2rem] text-[11px] font-black uppercase tracking-widest flex items-center gap-4 hover:bg-slate-900 transition-all shadow-2xl shadow-indigo-600/30 group">
+                                 <button className="px-10 py-5 bg-luxury-gold text-white rounded-[2rem] text-[11px] font-black uppercase tracking-widest flex items-center gap-4 hover:bg-slate-900 transition-all shadow-2xl shadow-luxury-gold/30 group">
                                     <Wand2 size={16} className="group-hover:rotate-12 transition-transform" /> Trigger Global Optimization
                                  </button>
                               </div>
@@ -486,7 +515,7 @@ const AdminPanel = () => {
                                     </div>
                                     <div className="grid grid-cols-2 gap-6">
                                        {[
-                                          { label: 'Ad Performance', value: '4.2x ROI', color: 'text-indigo-600' },
+                                          { label: 'Ad Performance', value: '4.2x ROI', color: 'text-luxury-gold' },
                                           { label: 'Social Reach', value: '180K+', color: 'text-rose-600' },
                                           { label: 'Conv. Rate', value: '3.8%', color: 'text-emerald-600' },
                                           { label: 'CAC', value: '₹420', color: 'text-amber-600' }
@@ -504,13 +533,13 @@ const AdminPanel = () => {
                                     <div className="absolute top-0 right-0 w-full h-full bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     <div className="flex items-center justify-between mb-10 relative z-10">
                                        <div className="flex items-center gap-5">
-                                          <div className="w-12 h-12 bg-white/10 text-emerald-400 rounded-2xl flex items-center justify-center"><BellRing size={24} /></div>
+                                          <div className="w-12 h-12 bg-white/10 text-luxury-gold rounded-2xl flex items-center justify-center"><BellRing size={24} /></div>
                                           <div>
                                              <h3 className="text-xl font-black text-white tracking-tight leading-none uppercase italic">Inventory Guard</h3>
                                              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-2">Low Stock Protocol</p>
                                           </div>
                                        </div>
-                                       <div className="px-5 py-2 bg-emerald-500/10 text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-widest">Active Scan</div>
+                                       <div className="px-5 py-2 bg-emerald-500/10 text-luxury-gold rounded-full text-[10px] font-black uppercase tracking-widest">Active Scan</div>
                                     </div>
 
                                     <div className="space-y-4 relative z-10 max-h-[160px] overflow-y-auto no-scrollbar">
@@ -522,7 +551,7 @@ const AdminPanel = () => {
                                                    <p className="text-[11px] text-white font-black uppercase tracking-widest truncate max-w-[150px]">{p.name}</p>
                                                    <p className="text-[8px] text-rose-400 font-bold uppercase tracking-widest mt-1">Refill Required</p>
                                                 </div>
-                                                <button onClick={() => setActiveTab('inventory')} className="p-2 bg-indigo-600 rounded-lg text-white"><ChevronRight size={14} /></button>
+                                                <button onClick={() => setActiveTab('inventory')} className="p-2 bg-luxury-gold rounded-lg text-white"><ChevronRight size={14} /></button>
                                              </div>
                                           ))
                                        ) : (
@@ -536,11 +565,11 @@ const AdminPanel = () => {
                               </div>
 
                               <div className="bg-[#0A0C10] p-12 rounded-[4rem] border border-white/5 shadow-2xl relative overflow-hidden">
-                                 <div className="absolute top-0 right-0 w-[40%] h-full bg-indigo-600/5 blur-[100px] rounded-full animate-pulse" />
+                                 <div className="absolute top-0 right-0 w-[40%] h-full bg-luxury-gold/5 blur-[100px] rounded-full animate-pulse" />
                                  <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-20">
                                     <div>
                                        <div className="flex items-center gap-4 mb-8">
-                                          <div className="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-xl flex items-center justify-center"><Fingerprint size={24} /></div>
+                                          <div className="w-12 h-12 bg-luxury-gold/20 text-indigo-400 rounded-xl flex items-center justify-center"><Fingerprint size={24} /></div>
                                           <div>
                                              <h3 className="text-white text-xl font-black tracking-tight">Neural Registry Scan</h3>
                                              <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest mt-1">Cross-Database Analytics Stream</p>
@@ -549,7 +578,7 @@ const AdminPanel = () => {
                                        <div className="space-y-6">
                                           {[
                                              { label: 'Inventory Leakage', status: '0.0%', color: 'bg-emerald-500' },
-                                             { label: 'Conversion Lift', status: '+4.2%', color: 'bg-indigo-500' },
+                                             { label: 'Conversion Lift', status: '+4.2%', color: 'bg-luxury-gold' },
                                              { label: 'Risk Anomaly', status: 'Low', color: 'bg-blue-500' }
                                           ].map((item, i) => (
                                              <div key={i} className="space-y-3">
@@ -566,12 +595,12 @@ const AdminPanel = () => {
                                     </div>
                                     <div className="flex flex-col items-center justify-center p-10 bg-white/5 rounded-[3rem] border border-white/10 relative group cursor-pointer">
                                        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 20, ease: "linear" }} className="relative w-40 h-40">
-                                          <div className="absolute inset-0 border-2 border-indigo-500/20 rounded-full" />
+                                          <div className="absolute inset-0 border-2 border-luxury-gold/20 rounded-full" />
                                           <div className="absolute inset-2 border border-indigo-400/10 rounded-full" />
                                           <div className="absolute inset-0 flex items-center justify-center">
                                              <Brain className="text-indigo-400" size={48} />
                                           </div>
-                                          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-indigo-500 rounded-full shadow-[0_0_20px_#6366f1]" />
+                                          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-luxury-gold rounded-full shadow-[0_0_20px_#6366f1]" />
                                        </motion.div>
                                        <div className="text-center mt-10">
                                           <p className="text-white text-[12px] font-black uppercase tracking-[0.4em] mb-2">Neural Core v2.0</p>
@@ -583,11 +612,83 @@ const AdminPanel = () => {
                            </div>
                         )}
 
+                        {activeTab === 'support' && (
+                           <div className="space-y-10 pb-20">
+                              <div className="flex items-center justify-between">
+                                 <div>
+                                    <h2 className="text-4xl font-black text-slate-800 tracking-tight uppercase italic leading-none">Support Desk</h2>
+                                    <p className="text-[11px] text-luxury-gold font-black uppercase tracking-[0.4em] mt-3 flex items-center gap-2"><MessageSquare size={14} /> Client Communication Registry</p>
+                                 </div>
+                              </div>
+
+                              <div className="bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden">
+                                 <table className="w-full text-left border-collapse">
+                                    <thead className="bg-slate-50">
+                                       <tr>
+                                          <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Client Identity</th>
+                                          <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Inquiry Nature</th>
+                                          <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Documentation</th>
+                                          <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                                          <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Registry Date</th>
+                                       </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                       {inquiries.length > 0 ? inquiries.map((inq) => (
+                                          <tr key={inq._id} className="hover:bg-slate-50/50 transition-all">
+                                             <td className="px-8 py-6">
+                                                <div className="flex flex-col gap-1">
+                                                   <span className="text-xs font-black text-slate-900 uppercase">{inq.name}</span>
+                                                   <span className="text-[10px] font-bold text-slate-400">{inq.email}</span>
+                                                </div>
+                                             </td>
+                                             <td className="px-8 py-6">
+                                                <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-indigo-100">{inq.subject}</span>
+                                             </td>
+                                             <td className="px-8 py-6 max-w-xs">
+                                                <p className="text-[11px] text-slate-600 leading-relaxed italic truncate hover:text-clip hover:whitespace-normal cursor-help">"{inq.message}"</p>
+                                             </td>
+                                             <td className="px-8 py-6">
+                                                <select 
+                                                   value={inq.status}
+                                                   onChange={async (e) => {
+                                                      try {
+                                                         await API.patch(`/contact/status/${inq._id}`, { status: e.target.value });
+                                                         toast.success('Inquiry status updated');
+                                                         fetchAllData();
+                                                      } catch (err) {
+                                                         toast.error('Failed to update status');
+                                                      }
+                                                   }}
+                                                   className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border outline-none ${inq.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' : inq.status === 'read' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}
+                                                >
+                                                   <option value="pending">Pending</option>
+                                                   <option value="read">Read</option>
+                                                   <option value="resolved">Resolved</option>
+                                                </select>
+                                             </td>
+                                             <td className="px-8 py-6">
+                                                <span className="text-[10px] font-black text-slate-400 uppercase">{new Date(inq.createdAt).toLocaleDateString()}</span>
+                                             </td>
+                                          </tr>
+                                       )) : (
+                                          <tr>
+                                             <td colSpan="5" className="px-8 py-20 text-center">
+                                                <Inbox size={40} className="text-slate-200 mx-auto mb-4" />
+                                                <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">No Active Inquiries Found</p>
+                                             </td>
+                                          </tr>
+                                       )}
+                                    </tbody>
+                                 </table>
+                              </div>
+                           </div>
+                        )}
+
                         {activeTab === 'dashboard' && (
                            <div className="space-y-8 pb-10">
                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                  {[
-                                    { label: 'GROSS REVENUE', value: `₹${formatPrice(stats?.totalRevenue)}`, icon: Briefcase, color: "bg-indigo-600" },
+                                    { label: 'GROSS REVENUE', value: `₹${formatPrice(stats?.totalRevenue)}`, icon: Briefcase, color: "bg-luxury-gold" },
                                     { label: 'TOTAL CUSTOMERS', value: stats?.totalUsers || 0, icon: Users, color: "bg-emerald-500" },
                                     { label: 'ACTIVE INVENTORY', value: products?.length || 0, icon: Package, color: "bg-blue-500" },
                                     { label: 'AVG ORDER VALUE', value: `₹${formatPrice(stats?.totalOrders > 0 ? stats.totalRevenue / stats.totalOrders : 0)}`, icon: Layers, color: "bg-amber-500" },
@@ -607,10 +708,10 @@ const AdminPanel = () => {
                                  {[
                                     { label: 'Inventory Alert', value: '2 Rare Assets', sub: 'Low Stock Protocol', icon: AlertTriangle, color: "text-amber-500", bg: "bg-amber-500/10", action: () => setActiveTab('inventory') },
                                     { label: 'Market Demand', value: 'Rolex Day-Date', sub: 'Most Wishlisted', icon: Flame, color: "text-orange-500", bg: "bg-orange-500/10", action: () => { setActiveTab('inventory'); toast.success('Market Pulse: Rolex is Trending'); } },
-                                    { label: 'Global Pricing', value: 'Valuation Active', sub: 'Bulk Price Modifier', icon: DollarSign, color: "text-indigo-500", bg: "bg-indigo-500/10", action: () => setIsBulkPriceModalOpen(true) },
+                                    { label: 'Global Pricing', value: 'Valuation Active', sub: 'Bulk Price Modifier', icon: DollarSign, color: "text-luxury-gold", bg: "bg-luxury-gold/10", action: () => setIsBulkPriceModalOpen(true) },
                                     { label: 'Billing Terminal', value: 'Ready to Sync', sub: 'PDF Invoice Generator', icon: FileText, color: "text-emerald-500", bg: "bg-emerald-500/10", action: () => setActiveTab('orders') },
                                  ].map((feature, i) => (
-                                    <div key={i} onClick={feature.action} className={`p-6 rounded-[2.5rem] border group cursor-pointer transition-all duration-500 ${isDarkMode ? 'bg-white/5 border-white/5 hover:bg-indigo-500/10 hover:border-indigo-500/20' : 'bg-white border-slate-100 hover:border-indigo-100 hover:shadow-2xl hover:shadow-indigo-500/10'}`}>
+                                    <div key={i} onClick={feature.action} className={`p-6 rounded-[2.5rem] border group cursor-pointer transition-all duration-500 ${isDarkMode ? 'bg-white/5 border-white/5 hover:bg-luxury-gold/10 hover:border-luxury-gold/20' : 'bg-white border-slate-100 hover:border-indigo-100 hover:shadow-2xl hover:shadow-luxury-gold/10'}`}>
                                        <div className="flex justify-between items-start mb-6">
                                           <div className={`w-12 h-12 ${feature.bg} ${feature.color} rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 group-hover:rotate-6`}>
                                              <feature.icon size={22} />
@@ -681,7 +782,7 @@ const AdminPanel = () => {
                                        <div className="w-full space-y-3 mt-8">
                                           {[
                                              { label: 'Delivered', value: stats?.deliveredOrders, color: 'bg-emerald-500' },
-                                             { label: 'Processing', value: stats?.pendingOrders, color: 'bg-indigo-500' },
+                                             { label: 'Processing', value: stats?.pendingOrders, color: 'bg-luxury-gold' },
                                              { label: 'Cancelled', value: stats?.cancelledOrders, color: 'bg-red-500' },
                                           ].map((item, i) => (
                                              <div key={i} className="flex justify-between items-center px-4 py-2.5 bg-slate-50/50 rounded-2xl border border-slate-50">
@@ -704,7 +805,7 @@ const AdminPanel = () => {
                                        {recentOrders?.slice(0, 5).map((order) => (
                                           <div key={order?._id} onClick={() => { setSelectedOrder(order); setIsOrderModalOpen(true); }} className="flex items-center justify-between p-5 bg-slate-50/30 rounded-[2rem] border border-transparent hover:border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-100 transition-all group cursor-pointer">
                                              <div className="flex items-center gap-5">
-                                                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-400 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-400 shadow-sm group-hover:bg-luxury-gold group-hover:text-white transition-all">
                                                    <ShoppingBag size={20} />
                                                 </div>
                                                 <div>
@@ -732,7 +833,7 @@ const AdminPanel = () => {
                                                    <img src={product?.images?.[0]} alt="" className="w-full h-full object-contain drop-shadow-md" />
                                                 </div>
                                                 <p className="text-[10px] font-black text-slate-800 truncate w-full px-2 uppercase">{product?.name}</p>
-                                                <p className="text-xs font-black text-indigo-600 mt-2">₹{formatPrice(product?.price)}</p>
+                                                <p className="text-xs font-black text-luxury-gold mt-2">₹{formatPrice(product?.price)}</p>
                                              </div>
                                           );
                                        })}
@@ -749,11 +850,11 @@ const AdminPanel = () => {
                                     {categories?.map(cat => (
                                        <button
                                           key={cat} onClick={() => setSelectedCategory(cat)}
-                                          className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedCategory === cat ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}
+                                          className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedCategory === cat ? 'bg-luxury-gold text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}
                                        >{cat}</button>
                                     ))}
                                  </div>
-                                 <button onClick={() => setIsAddModalOpen(true)} className="px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-indigo-600 transition-all flex items-center gap-3">
+                                 <button onClick={() => setIsAddModalOpen(true)} className="px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-luxury-gold transition-all flex items-center gap-3">
                                     <Plus size={16} /> Add Asset
                                  </button>
                               </div>
@@ -769,7 +870,13 @@ const AdminPanel = () => {
                                                 <div className="w-12 h-12 rounded-xl border border-slate-100 p-2 bg-white shadow-sm">
                                                    <img src={p?.images?.[0]} className="w-full h-full object-contain" alt="" />
                                                 </div>
-                                                <div><p className="text-xs font-black text-slate-800 uppercase tracking-tight">{p?.name}</p><p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{p?.brand}</p></div>
+                                                <div>
+                                                   <div className="flex items-center gap-2">
+                                                      <p className="text-xs font-black text-slate-800 uppercase tracking-tight">{p?.name}</p>
+                                                      {p?.isNewProduct && <span className="bg-luxury-gold text-white text-[7px] font-black px-1.5 py-0.5 rounded-sm uppercase tracking-tighter shadow-sm">NEW</span>}
+                                                   </div>
+                                                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{p?.brand}</p>
+                                                </div>
                                              </td>
                                              <td className="p-6"><span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase tracking-widest">{p?.category}</span></td>
                                              <td className="p-6 text-sm font-black text-slate-900 tracking-tighter">₹{formatPrice(p?.price)}</td>
@@ -780,7 +887,7 @@ const AdminPanel = () => {
                                                 />
                                                 <span className="text-[10px] font-black uppercase text-slate-400 mt-1 block">{p?.stock} Units</span>
                                              </td>
-                                             <td className="p-6 text-center pr-10"><div className="flex justify-center gap-3"><button className="w-9 h-9 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-indigo-600 shadow-sm"><Edit size={16} /></button><button className="w-9 h-9 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 shadow-sm"><Trash2 size={16} /></button></div></td>
+                                             <td className="p-6 text-center pr-10"><div className="flex justify-center gap-3"><button className="w-9 h-9 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-luxury-gold shadow-sm"><Edit size={16} /></button><button className="w-9 h-9 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 shadow-sm"><Trash2 size={16} /></button></div></td>
                                           </tr>
                                        ))}
                                     </tbody>
@@ -798,7 +905,7 @@ const AdminPanel = () => {
                                  </div>
                                  <div className="flex items-center gap-4">
                                     <div className="px-5 py-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-3">
-                                       <Users size={18} className="text-indigo-500" />
+                                       <Users size={18} className="text-luxury-gold" />
                                        <span className="text-xs font-black text-slate-800">{users.length} Total Users</span>
                                     </div>
                                  </div>
@@ -814,7 +921,7 @@ const AdminPanel = () => {
                                           <tr key={u?._id} className="hover:bg-slate-50/50 group">
                                              <td className="p-8 pl-12">
                                                 <div className="flex items-center gap-4">
-                                                   <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 border border-indigo-100 text-[11px] font-black uppercase shadow-sm">
+                                                   <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-luxury-gold border border-indigo-100 text-[11px] font-black uppercase shadow-sm">
                                                       {u?.username?.[0] || 'U'}
                                                    </div>
                                                    <div>
@@ -826,7 +933,7 @@ const AdminPanel = () => {
                                              <td className="p-8">
                                                 <div className="space-y-1">
                                                    <p className="text-xs font-black text-slate-800">₹{formatPrice(u?.totalSpent)}</p>
-                                                   <p className="text-[9px] text-indigo-500 font-bold uppercase tracking-widest">{u?.orderCount || 0} Orders</p>
+                                                   <p className="text-[9px] text-luxury-gold font-bold uppercase tracking-widest">{u?.orderCount || 0} Orders</p>
                                                 </div>
                                              </td>
                                              <td className="p-8">
@@ -851,13 +958,13 @@ const AdminPanel = () => {
                                              </td>
                                              <td className="p-8 text-center pr-12">
                                                 <div className="flex justify-center gap-2">
-                                                   <button onClick={() => handleFetchUserInsights(u._id)} className="w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-indigo-500 hover:bg-indigo-50 shadow-sm transition-all">
+                                                   <button onClick={() => handleFetchUserInsights(u._id)} className="w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-luxury-gold hover:bg-indigo-50 shadow-sm transition-all">
                                                       <Eye size={16} />
                                                    </button>
                                                    <button onClick={() => handleToggleUserStatus(u._id)} className={`w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center shadow-sm transition-all ${u?.status === 'suspended' ? 'text-emerald-500 hover:bg-emerald-50' : 'text-rose-500 hover:bg-rose-50'}`}>
                                                       {u?.status === 'suspended' ? <UserCheck size={16} /> : <Ban size={16} />}
                                                    </button>
-                                                   <button className="w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-300 hover:text-indigo-600 shadow-sm transition-all"><MessageSquare size={16} /></button>
+                                                   <button className="w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-300 hover:text-luxury-gold shadow-sm transition-all"><MessageSquare size={16} /></button>
                                                 </div>
                                              </td>
                                           </tr>
@@ -877,7 +984,7 @@ const AdminPanel = () => {
                      {activeTab === 'watchlist' && (
                         <div className="space-y-8">
                            <div className="bg-[#0A0C10] p-10 rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden">
-                              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 blur-[100px] rounded-full" />
+                              <div className="absolute top-0 right-0 w-64 h-64 bg-luxury-gold/10 blur-[100px] rounded-full" />
                               <div className="relative z-10 flex justify-between items-center">
                                  <div>
                                     <h3 className="text-2xl font-black text-white tracking-tight uppercase italic">Intelligence Ledger</h3>
@@ -945,7 +1052,7 @@ const AdminPanel = () => {
                                                    e.stopPropagation();
                                                    handleFetchUserInsights(u._id);
                                                 }}
-                                                className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all shadow-md relative z-20"
+                                                className="px-4 py-2 bg-luxury-gold text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all shadow-md relative z-20"
                                              >
                                                 Full Profile
                                              </button>
@@ -966,7 +1073,7 @@ const AdminPanel = () => {
                                     <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase italic">Offer Injection Center</h3>
                                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Manage Special Promo Boxes</p>
                                  </div>
-                                 <button onClick={() => setIsOfferModalOpen(true)} className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-indigo-600 transition-all flex items-center gap-3">
+                                 <button onClick={() => setIsOfferModalOpen(true)} className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-luxury-gold transition-all flex items-center gap-3">
                                     <Plus size={18} /> Add Offer Box
                                  </button>
                               </div>
@@ -976,12 +1083,12 @@ const AdminPanel = () => {
                                     <div key={offer.id} className="bg-white p-8 rounded-[3.5rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-2xl transition-all">
                                        <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-full -mr-12 -mt-12 group-hover:bg-indigo-100 transition-all"></div>
                                        <div className="relative z-10">
-                                          <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg">
+                                          <div className="w-12 h-12 bg-luxury-gold rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg">
                                              <Flame size={24} />
                                           </div>
                                           <h4 className="text-lg font-black text-slate-800 uppercase italic mb-1">{offer.title}</h4>
                                           <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-8 flex items-center gap-2">
-                                             <Clock size={12} className="text-indigo-500" /> Ends: {offer.expiry}
+                                             <Clock size={12} className="text-luxury-gold" /> Ends: {offer.expiry}
                                           </p>
 
                                           <div className="space-y-3 mb-8">
@@ -1002,11 +1109,11 @@ const AdminPanel = () => {
                                                    setNewOffer(offer);
                                                    setIsOfferModalOpen(true);
                                                 }}
-                                                className="w-11 h-11 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-300 hover:text-indigo-600 transition-all"
+                                                className="w-11 h-11 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-300 hover:text-luxury-gold transition-all"
                                              ><Edit size={16} /></button>
                                              <button
                                                 onClick={() => toast.success(`${offer.title} campaign DEACTIVATED`)}
-                                                className="flex-grow py-3.5 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all"
+                                                className="flex-grow py-3.5 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-luxury-gold transition-all"
                                              >Deactivate</button>
                                              <button
                                                 onClick={() => {
@@ -1072,7 +1179,7 @@ const AdminPanel = () => {
                                              <p className="text-xs font-black text-slate-800 uppercase">{ticket.id}</p>
                                           </div>
                                           <div>
-                                             <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight group-hover:text-indigo-600 transition-all">{ticket.subject}</h4>
+                                             <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight group-hover:text-luxury-gold transition-all">{ticket.subject}</h4>
                                              <div className="flex items-center gap-4 mt-2">
                                                 <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1"><Users size={12} /> {ticket.user}</p>
                                                 <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1"><Clock size={12} /> {ticket.date}</p>
@@ -1086,7 +1193,7 @@ const AdminPanel = () => {
                                           </div>
                                           <button
                                              onClick={() => handleResolveTicket(ticket.id)}
-                                             className="px-6 py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600 shadow-sm transition-all"
+                                             className="px-6 py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-luxury-gold shadow-sm transition-all"
                                           >Resolve Ticket</button>
                                        </div>
                                     </div>
@@ -1112,7 +1219,7 @@ const AdminPanel = () => {
                                     <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase italic">Knowledge Registry</h3>
                                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Frequently Asked Questions Management</p>
                                  </div>
-                                 <button onClick={() => { setEditingFaq(null); setNewFaq({ question: '', answer: '', category: 'General', order: 0 }); setIsFaqModalOpen(true); }} className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-indigo-600 transition-all flex items-center gap-3">
+                                 <button onClick={() => { setEditingFaq(null); setNewFaq({ question: '', answer: '', category: 'General', order: 0 }); setIsFaqModalOpen(true); }} className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-luxury-gold transition-all flex items-center gap-3">
                                     <Plus size={18} /> New Entry
                                  </button>
                               </div>
@@ -1122,11 +1229,11 @@ const AdminPanel = () => {
                                     <div key={faq._id} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 hover:shadow-xl transition-all group">
                                        <div className="flex justify-between items-start mb-6">
                                           <div className="flex items-center gap-4">
-                                             <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-black">?</div>
+                                             <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-luxury-gold font-black">?</div>
                                              <span className="px-4 py-1 bg-slate-50 text-slate-400 rounded-lg text-[8px] font-black uppercase tracking-widest border border-slate-100">{faq.category}</span>
                                           </div>
                                           <div className="flex gap-2">
-                                             <button onClick={() => { setEditingFaq(faq); setNewFaq(faq); setIsFaqModalOpen(true); }} className="w-9 h-9 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-300 hover:text-indigo-600 shadow-sm transition-all"><Edit size={16} /></button>
+                                             <button onClick={() => { setEditingFaq(faq); setNewFaq(faq); setIsFaqModalOpen(true); }} className="w-9 h-9 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-300 hover:text-luxury-gold shadow-sm transition-all"><Edit size={16} /></button>
                                              <button onClick={() => handleDeleteFaq(faq._id)} className="w-9 h-9 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-300 hover:text-red-500 shadow-sm transition-all"><Trash2 size={16} /></button>
                                           </div>
                                        </div>
@@ -1187,7 +1294,7 @@ const AdminPanel = () => {
                                     </div>
 
                                     <div className="flex gap-4">
-                                       <button className="px-10 py-5 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-indigo-600 transition-all flex items-center gap-3">
+                                       <button className="px-10 py-5 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-luxury-gold transition-all flex items-center gap-3">
                                           <ShieldCheck size={18} /> Authorize Sync
                                        </button>
                                        <button className="px-10 py-5 bg-white text-slate-400 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-slate-100 hover:text-red-500 transition-all">Reset Factory Defaults</button>
@@ -1197,13 +1304,13 @@ const AdminPanel = () => {
                                        <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase italic mb-8">Administrator Management</h3>
                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                           <form onSubmit={handleAddAdmin} className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6">
-                                             <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-ultra-widest mb-2">Inject New Admin</h4>
+                                             <h4 className="text-[10px] font-black text-luxury-gold uppercase tracking-ultra-widest mb-2">Inject New Admin</h4>
                                              <div className="space-y-4">
                                                 <input required type="text" placeholder="USERNAME" value={newAdmin.username} onChange={e => setNewAdmin({ ...newAdmin, username: e.target.value })} className="w-full px-6 py-3 bg-white rounded-xl outline-none text-[10px] font-bold border border-transparent focus:border-indigo-100" />
                                                 <input required type="email" placeholder="EMAIL@LUXE.COM" value={newAdmin.email} onChange={e => setNewAdmin({ ...newAdmin, email: e.target.value })} className="w-full px-6 py-3 bg-white rounded-xl outline-none text-[10px] font-bold border border-transparent focus:border-indigo-100" />
                                                 <input required type="password" placeholder="SECURITY KEY" value={newAdmin.password} onChange={e => setNewAdmin({ ...newAdmin, password: e.target.value })} className="w-full px-6 py-3 bg-white rounded-xl outline-none text-[10px] font-bold border border-transparent focus:border-indigo-100" />
                                              </div>
-                                             <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all">Authorize New Admin</button>
+                                             <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-luxury-gold transition-all">Authorize New Admin</button>
                                           </form>
                                           <form onSubmit={handleChangePassword} className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6">
                                              <h4 className="text-[10px] font-black text-amber-600 uppercase tracking-ultra-widest mb-2">Update Credentials</h4>
@@ -1255,7 +1362,7 @@ const AdminPanel = () => {
                                     <input type="number" value={newFaq.order} onChange={e => setNewFaq({ ...newFaq, order: Number(e.target.value) })} className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none text-sm font-bold border border-transparent focus:border-indigo-100 transition-all" />
                                  </div>
                               </div>
-                              <button type="submit" className="w-full py-5 bg-indigo-600 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] shadow-xl hover:bg-slate-900 transition-all">Authorize Knowledge Entry</button>
+                              <button type="submit" className="w-full py-5 bg-luxury-gold text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] shadow-xl hover:bg-slate-900 transition-all">Authorize Knowledge Entry</button>
                            </form>
                         </motion.div>
                      </div>
@@ -1267,21 +1374,145 @@ const AdminPanel = () => {
          {/* --- ADD PRODUCT MODAL --- */}
          <AnimatePresence>
             {isAddModalOpen && (
-               <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAddModalOpen(false)} className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" />
-                  <motion.div initial={{ opacity: 0, scale: 0.9, y: 40 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 40 }} className="bg-white rounded-[3rem] shadow-2xl w-full max-w-3xl overflow-hidden relative z-10">
-                     <div className="p-10 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                        <h2 className="text-xl font-black text-slate-800 tracking-tight uppercase italic">New Asset Entry</h2>
-                        <button onClick={() => setIsAddModalOpen(false)} className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-slate-400 hover:text-red-500 shadow-sm transition-all"><X size={20} /></button>
-                     </div>
-                     <form onSubmit={handleAddProduct} className="p-10 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                        <div className="grid grid-cols-2 gap-8">
-                           <div className="col-span-2 space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Asset Name</label><input required type="text" value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} className="w-full px-6 py-4 bg-slate-50 rounded-[1.5rem] outline-none text-sm font-bold" /></div>
-                           <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Price (₹)</label><input required type="number" value={newProduct.price} onChange={e => setNewProduct({ ...newProduct, price: Number(e.target.value) })} className="w-full px-6 py-4 bg-slate-50 rounded-[1.5rem] outline-none text-sm font-black text-indigo-600" /></div>
-                           <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Units</label><input required type="number" value={newProduct.stock} onChange={e => setNewProduct({ ...newProduct, stock: Number(e.target.value) })} className="w-full px-6 py-4 bg-slate-50 rounded-[1.5rem] outline-none text-sm font-bold" /></div>
-                           <div className="col-span-2 space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Media URL</label><input required type="text" value={newProduct.images[0]} onChange={e => setNewProduct({ ...newProduct, images: [e.target.value] })} className="w-full px-6 py-4 bg-slate-50 rounded-[1.5rem] outline-none text-sm font-bold" /></div>
+               <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAddModalOpen(false)} className="absolute inset-0 bg-slate-900/90 backdrop-blur-xl" />
+                  <motion.div initial={{ opacity: 0, scale: 0.95, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 30 }} className="bg-white rounded-[3.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] w-full max-w-4xl overflow-hidden relative z-10 border border-white/20">
+                     
+                     <div className="p-10 md:p-12 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                        <div className="flex items-center gap-6">
+                           <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-luxury-gold shadow-xl">
+                              <Plus size={28} />
+                           </div>
+                           <div>
+                              <h2 className="text-2xl font-black text-slate-800 tracking-tight uppercase italic leading-none">Asset Injection</h2>
+                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em] mt-2">New Horological Registry Entry</p>
+                           </div>
                         </div>
-                        <button type="submit" className="w-full py-5 bg-slate-900 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.3em] shadow-2xl hover:bg-indigo-600 transition-all">Authorize Entry</button>
+                        <button onClick={() => setIsAddModalOpen(false)} className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-slate-300 hover:text-red-500 hover:rotate-90 shadow-sm transition-all border border-slate-100"><X size={20} /></button>
+                     </div>
+
+                     <form onSubmit={handleAddProduct} className="p-10 md:p-12 space-y-10 max-h-[75vh] overflow-y-auto custom-scrollbar">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                           
+                           {/* Main Identity */}
+                           <div className="col-span-1 md:col-span-2 space-y-3">
+                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                 <div className="w-1 h-1 bg-luxury-gold rounded-full"></div> Masterpiece Name
+                              </label>
+                              <input required type="text" placeholder="e.g. ROLEX SUBMARINER DATE" value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} className="w-full px-8 py-5 bg-slate-50 rounded-[1.8rem] outline-none text-sm font-black border-2 border-transparent focus:border-luxury-gold/20 focus:bg-white transition-all uppercase tracking-tight" />
+                           </div>
+
+                           {/* Logistics Data */}
+                           <div className="space-y-3">
+                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                 <div className="w-1 h-1 bg-luxury-gold rounded-full"></div> Product SKU
+                              </label>
+                              <input required type="text" placeholder="LX-WTC-001" value={newProduct.sku} onChange={e => setNewProduct({ ...newProduct, sku: e.target.value })} className="w-full px-8 py-5 bg-slate-50 rounded-[1.8rem] outline-none text-sm font-bold border-2 border-transparent focus:border-luxury-gold/20 focus:bg-white transition-all" />
+                           </div>
+
+                           <div className="space-y-3">
+                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                 <div className="w-1 h-1 bg-luxury-gold rounded-full"></div> Boutique Brand
+                              </label>
+                              <input required type="text" placeholder="e.g. PATEK PHILIPPE" value={newProduct.brand} onChange={e => setNewProduct({ ...newProduct, brand: e.target.value })} className="w-full px-8 py-5 bg-slate-50 rounded-[1.8rem] outline-none text-sm font-black border-2 border-transparent focus:border-luxury-gold/20 focus:bg-white transition-all uppercase" />
+                           </div>
+
+                           {/* Financials */}
+                           <div className="space-y-3">
+                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                 <div className="w-1 h-1 bg-luxury-gold rounded-full"></div> Valuation (INR ₹)
+                              </label>
+                              <div className="relative group">
+                                 <span className="absolute left-6 top-1/2 -translate-y-1/2 text-luxury-gold font-black">₹</span>
+                                 <input required type="number" value={newProduct.price} onChange={e => setNewProduct({ ...newProduct, price: Number(e.target.value) })} className="w-full pl-12 pr-8 py-5 bg-slate-50 rounded-[1.8rem] outline-none text-lg font-black text-slate-900 border-2 border-transparent focus:border-luxury-gold/20 focus:bg-white transition-all tracking-tighter" />
+                              </div>
+                           </div>
+
+                           <div className="space-y-3">
+                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                 <div className="w-1 h-1 bg-luxury-gold rounded-full"></div> Initial Stock
+                              </label>
+                              <input required type="number" value={newProduct.stock} onChange={e => setNewProduct({ ...newProduct, stock: Number(e.target.value) })} className="w-full px-8 py-5 bg-slate-50 rounded-[1.8rem] outline-none text-sm font-bold border-2 border-transparent focus:border-luxury-gold/20 focus:bg-white transition-all" />
+                           </div>
+
+                           {/* Metadata */}
+                           <div className="space-y-3">
+                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                 <div className="w-1 h-1 bg-luxury-gold rounded-full"></div> Registry Category
+                              </label>
+                              <select value={newProduct.category} onChange={e => setNewProduct({ ...newProduct, category: e.target.value })} className="w-full px-8 py-5 bg-slate-50 rounded-[1.8rem] outline-none text-sm font-black border-2 border-transparent focus:border-luxury-gold/20 focus:bg-white transition-all uppercase">
+                                 <option value="">SELECT CLASS</option>
+                                 <option value="Rolex">Rolex Collection</option>
+                                 <option value="Titan">Titan Collection</option>
+                                 <option value="Men">Men's Portfolio</option>
+                                 <option value="Women">Women's Portfolio</option>
+                                 <option value="Limited">Limited Edition</option>
+                              </select>
+                           </div>
+
+                           <div className="space-y-3">
+                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                 <div className="w-1 h-1 bg-luxury-gold rounded-full"></div> Introductory Discount (%)
+                              </label>
+                              <input type="number" value={newProduct.discount} onChange={e => setNewProduct({ ...newProduct, discount: Number(e.target.value) })} className="w-full px-8 py-5 bg-slate-50 rounded-[1.8rem] outline-none text-sm font-bold border-2 border-transparent focus:border-luxury-gold/20 focus:bg-white transition-all" />
+                           </div>
+
+                           <div className="col-span-1 md:col-span-2 space-y-4">
+                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                 <div className="w-1 h-1 bg-luxury-gold rounded-full"></div> Gallery Media (Source URL)
+                              </label>
+                              <div className="flex flex-col md:flex-row gap-6 items-start">
+                                 <div className="flex-grow w-full">
+                                    <input required type="text" placeholder="PASTE IMAGE URL HERE..." value={newProduct.images[0]} onChange={e => setNewProduct({ ...newProduct, images: [e.target.value] })} className="w-full px-8 py-5 bg-slate-50 rounded-[1.8rem] outline-none text-[10px] font-bold border-2 border-transparent focus:border-luxury-gold/20 focus:bg-white transition-all text-slate-600 shadow-inner" />
+                                    <p className="text-[9px] text-slate-400 font-bold mt-2 ml-4 uppercase tracking-widest">Supports direct links from Unsplash, Imgur, or your own CDN</p>
+                                 </div>
+                                 {newProduct.images[0] && (
+                                    <div className="w-32 h-32 rounded-[2rem] overflow-hidden border-2 border-slate-100 bg-slate-50 shrink-0 shadow-lg group relative">
+                                       <img src={newProduct.images[0]} alt="Preview" className="w-full h-full object-cover transition-transform group-hover:scale-110" onError={(e) => e.target.src = 'https://placehold.co/400x400/F1F5F9/94A3B8?text=Invalid+Link'} />
+                                       <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                          <Eye size={16} className="text-white" />
+                                       </div>
+                                    </div>
+                                 )}
+                              </div>
+                           </div>
+
+                           <div className="col-span-1 md:col-span-2 space-y-3">
+                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                 <div className="w-1 h-1 bg-luxury-gold rounded-full"></div> Curated Narrative (Description)
+                              </label>
+                              <textarea required rows="5" placeholder="Document the heritage and specifications of this masterpiece..." value={newProduct.description} onChange={e => setNewProduct({ ...newProduct, description: e.target.value })} className="w-full px-8 py-6 bg-slate-50 rounded-[2rem] outline-none text-sm font-medium border-2 border-transparent focus:border-luxury-gold/20 focus:bg-white transition-all leading-relaxed custom-scrollbar" />
+                           </div>
+
+                           {/* Protocol Toggles */}
+                           <div className="col-span-1 md:col-span-2 p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 flex items-center justify-between">
+                              <div className="flex items-center gap-6">
+                                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${newProduct.isNewProduct ? 'bg-luxury-gold text-white shadow-lg shadow-luxury-gold/20' : 'bg-slate-200 text-slate-400'}`}>
+                                    <Sparkles size={24} />
+                                 </div>
+                                 <div>
+                                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-tight">Promotional Protocol</h4>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Activate 'NEW ARRIVAL' Registry Tag</p>
+                                 </div>
+                              </div>
+                              <div 
+                                 onClick={() => setNewProduct({ ...newProduct, isNewProduct: !newProduct.isNewProduct })}
+                                 className={`w-16 h-10 rounded-full p-1.5 cursor-pointer transition-all duration-500 ${newProduct.isNewProduct ? 'bg-luxury-gold' : 'bg-slate-300'}`}
+                              >
+                                 <div className={`w-7 h-7 bg-white rounded-full shadow-md transform transition-all duration-500 ${newProduct.isNewProduct ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                              </div>
+                           </div>
+
+                        </div>
+
+                        <div className="flex gap-6 pt-6">
+                           <button type="submit" className="flex-grow py-6 bg-slate-900 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.5em] shadow-2xl hover:bg-luxury-gold transition-all duration-500 active:scale-95">
+                              Authorize Entry
+                           </button>
+                           <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-10 py-6 bg-white text-slate-400 rounded-[2rem] text-[10px] font-black uppercase tracking-widest border-2 border-slate-100 hover:border-red-500 hover:text-red-500 transition-all">
+                              Cancel Protocol
+                           </button>
+                        </div>
                      </form>
                   </motion.div>
                </div>
@@ -1301,11 +1532,11 @@ const AdminPanel = () => {
                      <form onSubmit={handleSaveOffer} className="p-10 space-y-8">
                         <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Campaign Label</label><input required type="text" value={newOffer.title} onChange={e => setNewOffer({ ...newOffer, title: e.target.value })} className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none text-sm font-bold border border-transparent focus:border-indigo-100 transition-all" placeholder="Flash Sale..." /></div>
                         <div className="grid grid-cols-2 gap-8">
-                           <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Discount (%)</label><input required type="number" value={newOffer.discount} onChange={e => setNewOffer({ ...newOffer, discount: Number(e.target.value) })} className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none text-sm font-black text-indigo-600 border border-transparent focus:border-indigo-100 transition-all" /></div>
+                           <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Discount (%)</label><input required type="number" value={newOffer.discount} onChange={e => setNewOffer({ ...newOffer, discount: Number(e.target.value) })} className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none text-sm font-black text-luxury-gold border border-transparent focus:border-indigo-100 transition-all" /></div>
                            <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Expiry Date</label><input required type="date" value={newOffer.expiry} onChange={e => setNewOffer({ ...newOffer, expiry: e.target.value })} className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none text-sm font-bold border border-transparent focus:border-indigo-100 transition-all" /></div>
                         </div>
                         <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Target Asset</label><input required type="text" value={newOffer.product} onChange={e => setNewOffer({ ...newOffer, product: e.target.value })} className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none text-sm font-bold border border-transparent focus:border-indigo-100 transition-all" placeholder="Product SKU or Name..." /></div>
-                        <button type="submit" className="w-full py-5 bg-indigo-600 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.5em] shadow-xl hover:bg-slate-900 transition-all">Activate Promo Box</button>
+                        <button type="submit" className="w-full py-5 bg-luxury-gold text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.5em] shadow-xl hover:bg-slate-900 transition-all">Activate Promo Box</button>
                      </form>
                   </motion.div>
                </div>
@@ -1320,11 +1551,11 @@ const AdminPanel = () => {
                   <motion.div initial={{ opacity: 0, scale: 0.9, x: 100 }} animate={{ opacity: 1, scale: 1, x: 0 }} exit={{ opacity: 0, scale: 0.9, x: 100 }} className="bg-white rounded-[3rem] shadow-2xl w-full max-w-4xl overflow-hidden relative z-10">
                      <div className="grid grid-cols-1 md:grid-cols-3 h-full">
                         <div className="p-10 bg-slate-50 border-r border-slate-100">
-                           <div className="flex items-center gap-3 mb-8"><div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg"><ShoppingBag size={20} /></div><div><h2 className="text-sm font-black text-slate-800 uppercase italic">Logistics Ref</h2><p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">#{selectedOrder._id.slice(-12).toUpperCase()}</p></div></div>
+                           <div className="flex items-center gap-3 mb-8"><div className="w-10 h-10 bg-luxury-gold rounded-xl flex items-center justify-center text-white shadow-lg"><ShoppingBag size={20} /></div><div><h2 className="text-sm font-black text-slate-800 uppercase italic">Logistics Ref</h2><p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">#{selectedOrder._id.slice(-12).toUpperCase()}</p></div></div>
                            <div className="space-y-8">
-                              <div><h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Consignee Identity</h4><div className="flex items-center gap-3"><div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[10px] font-black text-indigo-600 border border-indigo-100 uppercase">{selectedOrder.userId?.username?.[0] || 'G'}</div><div><p className="text-xs font-black text-slate-800 uppercase">{selectedOrder.userId?.username || 'Guest Archive'}</p><p className="text-[10px] text-slate-400 font-bold">{selectedOrder.userId?.email}</p></div></div></div>
-                              <div><h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Delivery Destination</h4><div className="flex gap-3 text-slate-600"><MapPin size={16} className="shrink-0 mt-0.5 text-indigo-500" /><p className="text-[11px] font-bold leading-relaxed">{selectedOrder.shippingAddress || 'N/A'}</p></div></div>
-                              <div><h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Financial Settlement</h4><div className="flex items-center gap-3 text-slate-800"><CreditCard size={16} className="text-indigo-500" /><p className="text-xs font-black uppercase tracking-tight">{selectedOrder.paymentMethod || 'Secure Channel'}</p></div></div>
+                              <div><h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Consignee Identity</h4><div className="flex items-center gap-3"><div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[10px] font-black text-luxury-gold border border-indigo-100 uppercase">{selectedOrder.userId?.username?.[0] || 'G'}</div><div><p className="text-xs font-black text-slate-800 uppercase">{selectedOrder.userId?.username || 'Guest Archive'}</p><p className="text-[10px] text-slate-400 font-bold">{selectedOrder.userId?.email}</p></div></div></div>
+                              <div><h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Delivery Destination</h4><div className="flex gap-3 text-slate-600"><MapPin size={16} className="shrink-0 mt-0.5 text-luxury-gold" /><p className="text-[11px] font-bold leading-relaxed">{selectedOrder.shippingAddress || 'N/A'}</p></div></div>
+                              <div><h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Financial Settlement</h4><div className="flex items-center gap-3 text-slate-800"><CreditCard size={16} className="text-luxury-gold" /><p className="text-xs font-black uppercase tracking-tight">{selectedOrder.paymentMethod || 'Secure Channel'}</p></div></div>
                            </div>
                         </div>
                         <div className="p-10 md:col-span-2 flex flex-col bg-white">
@@ -1338,7 +1569,7 @@ const AdminPanel = () => {
                               ))}
                            </div>
                            <div className="mt-8 pt-8 border-t border-slate-50">
-                              <div className="flex justify-between items-center mb-6"><div><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol Valuation</p><p className="text-2xl font-black text-indigo-600 tracking-tighter">₹{formatPrice(selectedOrder.totalAmount)}</p></div></div>
+                              <div className="flex justify-between items-center mb-6"><div><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol Valuation</p><p className="text-2xl font-black text-luxury-gold tracking-tighter">₹{formatPrice(selectedOrder.totalAmount)}</p></div></div>
                                  <div className="flex flex-col gap-4">
                                     {selectedOrder.status === 'pending' ? (
                                        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -1356,7 +1587,7 @@ const AdminPanel = () => {
                                                       const id = `LX${Math.random().toString(36).substring(2, 8).toUpperCase()}${Date.now().toString().slice(-4)}`;
                                                       setTrackingForm({ ...trackingForm, trackingId: id });
                                                    }}
-                                                   className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-white border border-slate-200 rounded-lg text-[8px] font-black uppercase text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                                                   className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-white border border-slate-200 rounded-lg text-[8px] font-black uppercase text-luxury-gold hover:bg-luxury-gold hover:text-white transition-all shadow-sm"
                                                 >
                                                    Generate ID
                                                 </button>
@@ -1377,7 +1608,7 @@ const AdminPanel = () => {
                                           <button
                                              onClick={() => handleUpdateOrderStatus(selectedOrder._id, 'shipped')}
                                              disabled={!trackingForm.trackingId}
-                                             className={`w-full py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 ${trackingForm.trackingId ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-95' : 'bg-slate-50 text-slate-300 cursor-not-allowed border border-slate-100'}`}
+                                             className={`w-full py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 ${trackingForm.trackingId ? 'bg-luxury-gold text-white shadow-xl shadow-luxury-gold/20 hover:scale-[1.02] active:scale-95' : 'bg-slate-50 text-slate-300 cursor-not-allowed border border-slate-100'}`}
                                           >
                                              <Truck size={18} />
                                              {trackingForm.trackingId ? 'Authorize Dispatch & Move to Hub' : 'Awaiting Tracking Protocol'}
@@ -1406,11 +1637,11 @@ const AdminPanel = () => {
                                                    <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between">
                                                       <div>
                                                          <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Active Logistics Link</p>
-                                                         <p className="text-xs font-black text-indigo-600 uppercase tracking-tight">{selectedOrder.trackingId}</p>
+                                                         <p className="text-xs font-black text-luxury-gold uppercase tracking-tight">{selectedOrder.trackingId}</p>
                                                       </div>
                                                       <div className="text-right">
                                                          <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Partner</p>
-                                                         <p className="text-xs font-black text-indigo-600 uppercase tracking-tight">{selectedOrder.courierPartner}</p>
+                                                         <p className="text-xs font-black text-luxury-gold uppercase tracking-tight">{selectedOrder.courierPartner}</p>
                                                       </div>
                                                    </div>
                                                 )}
@@ -1424,7 +1655,7 @@ const AdminPanel = () => {
                                     <StatusBadge status={selectedOrder.status} />
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol Status Updated</p>
                                  </div>
-                                 <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${selectedOrder.status === 'delivered' ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'}`}>
+                                 <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${selectedOrder.status === 'delivered' ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-luxury-gold'}`}>
                                     {selectedOrder.status === 'delivered' ? 'Shipment Finalized' : 'Logistics Active'}
                                  </div>
                               </div>
@@ -1455,11 +1686,11 @@ const AdminPanel = () => {
                         </div>
 
                         <div className="space-y-6">
-                           <div className={`p-6 rounded-3xl border ${isDarkMode ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-indigo-50/50 border-indigo-50'}`}>
+                           <div className={`p-6 rounded-3xl border ${isDarkMode ? 'bg-luxury-gold/10 border-luxury-gold/20' : 'bg-indigo-50/50 border-indigo-50'}`}>
                               <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest mb-4">Select Target Brand</p>
                               <div className="grid grid-cols-2 gap-3">
                                  {['Rolex', 'Titan', 'Omega', 'Casio'].map(brand => (
-                                    <button key={brand} className={`px-4 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest border transition-all ${brand === 'Rolex' ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/20' : isDarkMode ? 'bg-white/5 border-white/5 text-white/40 hover:border-indigo-500/40' : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-200'}`}>{brand}</button>
+                                    <button key={brand} className={`px-4 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest border transition-all ${brand === 'Rolex' ? 'bg-luxury-gold text-white border-luxury-gold shadow-lg shadow-luxury-gold/20' : isDarkMode ? 'bg-white/5 border-white/5 text-white/40 hover:border-luxury-gold/40' : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-200'}`}>{brand}</button>
                                  ))}
                               </div>
                            </div>
@@ -1475,7 +1706,7 @@ const AdminPanel = () => {
                               </div>
                            </div>
 
-                           <button onClick={() => { toast.success('Global Price Adjustment AUTHORIZED'); setIsBulkPriceModalOpen(false); }} className={`w-full py-5 rounded-3xl text-[11px] font-black uppercase tracking-[0.3em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all mt-4 ${isDarkMode ? 'bg-indigo-600 text-white shadow-indigo-500/20' : 'bg-slate-900 text-white shadow-slate-900/20'}`}>Execute Price Modification</button>
+                           <button onClick={() => { toast.success('Global Price Adjustment AUTHORIZED'); setIsBulkPriceModalOpen(false); }} className={`w-full py-5 rounded-3xl text-[11px] font-black uppercase tracking-[0.3em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all mt-4 ${isDarkMode ? 'bg-luxury-gold text-white shadow-luxury-gold/20' : 'bg-slate-900 text-white shadow-slate-900/20'}`}>Execute Price Modification</button>
                         </div>
                      </div>
                   </motion.div>
@@ -1535,7 +1766,7 @@ const AdminPanel = () => {
                                              <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">ID #{order._id.slice(-6).toUpperCase()}</p>
                                              <p className="text-xs font-bold text-slate-900">{new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
                                           </div>
-                                          <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
+                                          <div className="w-2 h-2 rounded-full bg-luxury-gold"></div>
                                        </div>
                                        <div className="space-y-2 mb-4">
                                           {order.items.map((item, j) => (

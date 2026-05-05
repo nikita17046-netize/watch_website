@@ -16,6 +16,8 @@ const Products = () => {
   const categoryFilter = searchParams.get('category');
   const brandFilter = searchParams.get('brand');
   const saleFilter = searchParams.get('sale');
+  const isNewFilter = searchParams.get('isNew');
+  const queryParam = searchParams.get('search') || '';
   const sort = searchParams.get('sort') || 'newest';
 
   useEffect(() => {
@@ -27,8 +29,9 @@ const Products = () => {
             category: categoryFilter,
             brand: brandFilter,
             sale: saleFilter,
+            isNewProduct: isNewFilter,
             sort,
-            search: searchQuery
+            search: queryParam
           }
         });
         setProducts(res.data.products);
@@ -38,7 +41,22 @@ const Products = () => {
       setLoading(false);
     };
     fetchProducts();
-  }, [categoryFilter, brandFilter, saleFilter, sort, searchQuery]);
+  }, [categoryFilter, brandFilter, saleFilter, isNewFilter, sort, queryParam]);
+
+  useEffect(() => {
+    setSearchQuery(queryParam);
+  }, [queryParam]);
+
+  const updateSearch = (val) => {
+    setSearchQuery(val);
+    const newParams = new URLSearchParams(searchParams);
+    if (val) {
+      newParams.set('search', val);
+    } else {
+      newParams.delete('search');
+    }
+    setSearchParams(newParams);
+  };
 
   const updateFilter = (key, value) => {
     const newParams = new URLSearchParams(searchParams);
@@ -98,7 +116,7 @@ const Products = () => {
                 <span className="text-luxury-gold uppercase tracking-[0.5em] text-[10px] font-black shimmer">The Registry</span>
                 <div className="h-[1px] w-12 bg-luxury-gold/30"></div>
               </div>
-              <h1 className="text-6xl md:text-8xl font-playfair font-black text-black tracking-tighter leading-none mb-4">
+              <h1 className="text-6xl md:text-8xl font-playfair font-black text-luxury-charcoal tracking-tighter leading-none mb-4">
                 Curated <span className="italic font-light">Collections.</span>
               </h1>
               <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-bold max-w-lg mx-auto leading-relaxed">
@@ -116,12 +134,12 @@ const Products = () => {
           <div className="flex items-center gap-8 w-full md:w-auto">
             <button 
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-3 text-[11px] uppercase tracking-widest font-bold text-black hover:text-gray-500 transition-all font-inter group"
+              className="flex items-center gap-3 text-[11px] uppercase tracking-widest font-bold text-luxury-charcoal hover:text-gray-500 transition-all font-inter group"
             >
-              <div className="p-2 bg-black text-white rounded-lg group-hover:bg-gray-800 transition-colors">
+              <div className="p-2 bg-luxury-charcoal text-white rounded-lg group-hover:bg-gray-800 transition-colors">
                 <SlidersHorizontal size={14} />
               </div>
-              Filter {showFilters && <span className="w-1.5 h-1.5 bg-black rounded-full"></span>}
+              Filter {showFilters && <span className="w-1.5 h-1.5 bg-luxury-charcoal rounded-full"></span>}
             </button>
             
             <div className="h-8 w-px bg-gray-100 hidden md:block"></div>
@@ -131,9 +149,9 @@ const Products = () => {
               <input 
                 type="text" 
                 placeholder="Find Timepiece..." 
-                className="pl-12 pr-6 py-2.5 bg-gray-50 rounded-xl text-xs font-medium text-black outline-none focus:bg-white focus:ring-1 focus:ring-black/10 transition-all w-full md:w-64 border border-gray-100 font-inter"
+                className="pl-12 pr-6 py-2.5 bg-gray-50 rounded-xl text-xs font-medium text-luxury-charcoal outline-none focus:bg-white focus:ring-1 focus:ring-black/10 transition-all w-full md:w-64 border border-gray-100 font-inter"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => updateSearch(e.target.value)}
               />
             </div>
           </div>
@@ -142,7 +160,7 @@ const Products = () => {
             <div className="flex items-center gap-4">
               <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold font-inter">Sort by</span>
               <div className="relative group">
-                <button className="flex items-center gap-2 text-[11px] uppercase tracking-widest font-bold text-black border-b border-black/20 pb-1 font-inter hover:border-black transition-colors">
+                <button className="flex items-center gap-2 text-[11px] uppercase tracking-widest font-bold text-luxury-charcoal border-b border-luxury-charcoal/20 pb-1 font-inter hover:border-luxury-charcoal transition-colors">
                   {sort.replace('-', ' ')} <ChevronDown size={14} />
                 </button>
                 <div className="absolute right-0 top-full mt-3 bg-white shadow-2xl rounded-xl border border-gray-100 p-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
@@ -150,7 +168,7 @@ const Products = () => {
                     <button 
                       key={s} 
                       onClick={() => updateFilter('sort', s)}
-                      className="block w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-widest hover:bg-gray-50 rounded-lg transition-colors font-bold text-gray-600 hover:text-black font-inter"
+                      className="block w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-widest hover:bg-gray-50 rounded-lg transition-colors font-bold text-gray-600 hover:text-luxury-charcoal font-inter"
                     >
                       {s.replace('-', ' ')}
                     </button>
@@ -233,34 +251,39 @@ const Products = () => {
                     className="group"
                   >
                     <Link to={`/product/${product._id}`}>
-                      <div className="relative aspect-[4/5] rounded-[3.5rem] bg-white premium-card mb-8">
+                      <div className="relative aspect-[4/5] rounded-[3.5rem] bg-white premium-card mb-8 overflow-hidden group/card">
                         <img 
                           src={product.images[0]} 
                           alt={product.name} 
-                          className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
+                          className="w-full h-full object-cover transition-transform duration-[3s] group-hover:scale-110"
                         />
-                        <div className="absolute top-8 right-8 z-10">
+                        <div className="absolute top-8 right-8 z-20">
                           <button 
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
                               addToWishlist(product);
                             }}
-                            className={`p-3 rounded-full backdrop-blur-md transition-all duration-300 shadow-sm ${isInWishlist(product._id) ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-400 hover:text-red-500'}`}
+                            className={`p-4 rounded-2xl backdrop-blur-xl border border-white/20 transition-all duration-500 shadow-xl group/like active:scale-90 ${isInWishlist(product._id) ? 'bg-red-500 text-white border-red-400' : 'bg-white/80 text-luxury-charcoal hover:bg-white hover:text-red-500'}`}
                           >
-                            <Heart size={16} fill={isInWishlist(product._id) ? "currentColor" : "none"} />
+                            <Heart size={18} className={`transition-transform duration-500 ${isInWishlist(product._id) ? 'scale-110' : 'group-hover/like:scale-125'}`} fill={isInWishlist(product._id) ? "currentColor" : "none"} />
                           </button>
                         </div>
-                        <div className="absolute top-8 left-8">
-                           <span className="bg-white/90 backdrop-blur-md px-5 py-2 rounded-full text-[8px] uppercase tracking-[0.3em] font-black shadow-sm">
+                        <div className="absolute top-8 left-8 flex flex-col gap-3">
+                           <span className="bg-white/90 backdrop-blur-md px-5 py-2 rounded-full text-[8px] uppercase tracking-[0.3em] font-black shadow-sm text-luxury-charcoal">
                             {product.brand}
-                          </span>
+                           </span>
+                           {product.isNewProduct && (
+                             <span className="bg-luxury-gold px-5 py-2 rounded-full text-[8px] uppercase tracking-[0.3em] font-black shadow-xl text-white">
+                               NEW
+                             </span>
+                           )}
                         </div>
                       </div>
                       
                       <div className="px-4">
-                        <h3 className="text-xl font-playfair font-medium text-luxury-charcoal mb-4 group-hover:text-[#C9A84C] transition-colors duration-500 line-clamp-1">{product.name}</h3>
-                        <div className="flex justify-between items-center">
+                        <h3 className="text-xl font-playfair font-medium text-luxury-charcoal mb-4 group-hover:text-luxury-gold transition-colors duration-500 line-clamp-1">{product.name}</h3>
+                        <div className="flex justify-between items-center border-t border-luxury-sand/50 pt-4">
                           <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">{product.category}</p>
                           <p className="text-xl font-black text-luxury-charcoal tracking-tight">${product.price.toLocaleString()}</p>
                         </div>

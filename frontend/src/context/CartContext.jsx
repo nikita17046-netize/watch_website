@@ -35,10 +35,10 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (productId, quantity = 1) => {
     if (!user) {
-      toast.error('Please login to acquire this masterpiece', {
-        style: { background: '#1A1A1A', color: '#fff', fontSize: '12px' }
+      toast.error('Identity Verification Required. Please login to acquire this masterpiece.', {
+        style: { background: '#1A1A1A', color: '#fff', fontSize: '10px', border: '1px solid #C9A84C' }
       });
-      return;
+      return false;
     }
 
     try {
@@ -62,6 +62,7 @@ export const CartProvider = ({ children }) => {
   };
 
   const removeFromCart = async (productId) => {
+
     try {
       const res = await API.delete(`/cart/product/${productId}`);
       const mappedItems = (res.data.cart.items || []).map(item => ({

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import API from '../api/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HelpCircle, ChevronDown, MessageCircle, ShieldCheck, Clock, Award, Search, Globe, Mail, Phone, MapPin } from 'lucide-react';
+import { HelpCircle, ChevronDown, MessageCircle, ShieldCheck, Clock, Award, Search, Globe, Mail, Phone, MapPin, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const FAQ = () => {
   const [faqs, setFaqs] = useState([]);
@@ -26,10 +27,11 @@ const FAQ = () => {
 
   const categories = ['All', 'Shipping & Logistics', 'Warranty & Repair', 'Authenticity & Certification', 'Membership & Rewards', 'Payment & Security'];
 
-  const filteredFaqs = faqs.filter(faq => {
-    const matchesSearch = (faq.question || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         (faq.answer || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = activeCategory === 'All' || (faq.category || '').trim() === activeCategory.trim();
+  const filteredFaqs = (Array.isArray(faqs) ? faqs : []).filter(faq => {
+    if (!faq) return false;
+    const matchesSearch = (faq.question || '').toLowerCase().includes((searchQuery || '').toLowerCase()) || 
+                         (faq.answer || '').toLowerCase().includes((searchQuery || '').toLowerCase());
+    const matchesCategory = activeCategory === 'All' || (faq.category || '').trim() === (activeCategory || '').trim();
     return matchesSearch && matchesCategory;
   });
 

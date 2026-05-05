@@ -16,14 +16,14 @@ module.exports.createProduct = async ({
   if (
     !name ||
     !description ||
-    !stock ||
-    !price ||
-    !sku ||
+    sku === undefined ||
+    price === undefined ||
+    stock === undefined ||
     !images ||
     !brand ||
     !category
   ) {
-    throw new Error("All Feild Are Required !!");
+    throw new Error("All Fields Are Required !!");
   }
 
   let product = await productModel.create({
@@ -51,12 +51,13 @@ module.exports.singleProduct = async (id) => {
 
 // all product
 module.exports.AllProduct = async (query = {}) => {
-  const { category, brand, sale, sort, search } = query;
+  const { category, brand, sale, isNewProduct, sort, search } = query;
   
   let filter = {};
   if (category) filter.category = category;
   if (brand) filter.brand = brand;
   if (sale === 'true') filter.discount = { $gt: 0 };
+  if (isNewProduct === 'true') filter.isNewProduct = true;
   
   if (search) {
     filter.$or = [
