@@ -22,7 +22,9 @@ export const CartProvider = ({ children }) => {
     setLoading(true);
     try {
       const res = await API.get('/cart/all');
-      const mappedItems = (res.data.cart.items || []).map(item => ({
+      const cartObj = res.data?.cart || res.data || {};
+      const items = cartObj.items || [];
+      const mappedItems = items.map(item => ({
         ...item,
         product: item.productId
       }));
@@ -34,6 +36,12 @@ export const CartProvider = ({ children }) => {
   };
 
   const addToCart = async (productId, quantity = 1) => {
+    // Explicitly check for ID
+    if (!productId) {
+      toast.error("Asset Identifier Missing");
+      return false;
+    }
+
     if (!user) {
       toast.error('Identity Verification Required. Please login to acquire this masterpiece.', {
         style: { background: '#1A1A1A', color: '#fff', fontSize: '10px', border: '1px solid #C9A84C' }
@@ -41,46 +49,57 @@ export const CartProvider = ({ children }) => {
       return false;
     }
 
+    const tid = toast.loading('Synchronizing with Collection...');
     try {
       const res = await API.post('/cart/add', { 
         item: { productId, quantity } 
       });
-      const mappedItems = (res.data.cart.items || []).map(item => ({
+      
+      const cartObj = res.data?.cart || res.data || {};
+      const items = cartObj.items || [];
+      const mappedItems = items.map(item => ({
         ...item,
         product: item.productId
       }));
+      
       setCart(mappedItems);
+      
       toast.success('Piece added to your collection', {
+        id: tid,
         style: { background: '#C9A84C', color: '#fff', fontSize: '12px' }
       });
-      return res.data;
+      return true;
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Unable to update registry";
-      toast.error(errorMsg);
-      throw err;
+      toast.error(errorMsg, { id: tid });
+      return false;
     }
   };
 
   const removeFromCart = async (productId) => {
-
+    const tid = toast.loading('Updating Registry...');
     try {
       const res = await API.delete(`/cart/product/${productId}`);
-      const mappedItems = (res.data.cart.items || []).map(item => ({
+      const cartObj = res.data?.cart || res.data || {};
+      const items = cartObj.items || [];
+      const mappedItems = items.map(item => ({
         ...item,
         product: item.productId
       }));
       setCart(mappedItems);
-      toast.success('Registry updated successfully');
+      toast.success('Registry updated successfully', { id: tid });
     } catch (err) {
       console.error("Remove from cart error", err);
-      toast.error('Unable to remove item from registry');
+      toast.error('Unable to remove item from registry', { id: tid });
     }
   };
 
   const updateQuantity = async (productId, quantity) => {
     try {
       const res = await API.post('/cart/update', { productId, quantity });
-      const mappedItems = (res.data.cart.items || []).map(item => ({
+      const cartObj = res.data?.cart || res.data || {};
+      const items = cartObj.items || [];
+      const mappedItems = items.map(item => ({
         ...item,
         product: item.productId
       }));
@@ -96,7 +115,6 @@ export const CartProvider = ({ children }) => {
       setCart([]);
     } catch (err) {
       console.error("Clear cart error", err);
-      // Fallback: clear local state anyway to unblock user
       setCart([]);
     }
   };

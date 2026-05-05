@@ -4,7 +4,7 @@ import API from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Heart, Shield, RefreshCw, Truck, ChevronRight, Star, Minus, Plus, Share2, Info, Sparkles } from 'lucide-react';
+import { ShoppingBag, Heart, Shield, RefreshCw, Truck, ChevronRight, Star, Minus, Plus, Share2, Info, Sparkles, ShieldCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useWishlist as useLuxeWishlist } from '../context/WishlistContext';
 
@@ -71,14 +71,16 @@ const ProductDetail = () => {
 
   useEffect(() => {
     const fetchRelated = async () => {
-      if (product) {
+      if (product && product.category) {
         try {
           const res = await API.get('/product/all', {
             params: { category: product.category }
           });
-          setRelatedProducts(res.data.products.filter(p => p._id !== product._id).slice(0, 4));
+          const products = res.data.products || [];
+          setRelatedProducts(products.filter(p => p._id !== product._id).slice(0, 4));
         } catch (err) {
           console.error("Related fetch error", err);
+          setRelatedProducts([]);
         }
       }
     };
@@ -86,6 +88,7 @@ const ProductDetail = () => {
   }, [product]);
 
   const handleAddToCart = async () => {
+    console.log("Cart button clicked for", product?._id);
     setAdding(true);
     try {
       const success = await addToCart(product._id, quantity);
@@ -151,7 +154,7 @@ const ProductDetail = () => {
           <span>/</span>
           <Link to="/products" className="hover:text-[#C9A84C]">Watches</Link>
           <span>/</span>
-          <span className="text-[#C9A84C]">{product.brand}</span>
+          <span className="text-[#C9A84C]">{product.brand || 'Horology'}</span>
         </div>
 
         <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-[#F0E6D2] mb-20">
@@ -165,11 +168,15 @@ const ProductDetail = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 className="aspect-square rounded-3xl overflow-hidden shadow-xl bg-white border-4 border-white"
               >
-                <img src={product.images[activeImage]} alt={product.name} className="w-full h-full object-cover" />
+                {product.images && product.images.length > 0 ? (
+                  <img src={product.images[activeImage] || product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 uppercase text-[10px] font-black">No Preview Available</div>
+                )}
               </motion.div>
               
               <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
-                {product.images.map((img, idx) => (
+                {product.images && product.images.map((img, idx) => (
                   <button 
                     key={idx}
                     onClick={() => setActiveImage(idx)}
@@ -191,7 +198,9 @@ const ProductDetail = () => {
                   {product.name}
                 </h1>
                 <div className="flex items-center gap-6 mb-6">
-                  <span className="text-3xl font-black text-[#C9A84C]">${product.price.toLocaleString()}</span>
+                  <span className="text-3xl font-black text-[#C9A84C]">
+                    ${(product.price || 0).toLocaleString()}
+                  </span>
                   <div className="flex items-center text-[#FFB800]">
                     <Star size={14} fill="currentColor" />
                     <Star size={14} fill="currentColor" />
@@ -350,7 +359,9 @@ const ProductDetail = () => {
                         </div>
                         <h5 className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">{rev.userId?.username || 'Client'}</h5>
                       </div>
-                      <span className="text-[8px] text-gray-300 font-bold tracking-tighter">{new Date(rev.createdAt).toLocaleDateString()}</span>
+                      <span className="text-[8px] text-gray-300 font-bold tracking-tighter">
+                        {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString() : 'Recently'}
+                      </span>
                     </div>
                     <p className="text-[11px] text-gray-500 italic leading-relaxed">"{rev.comment}"</p>
                   </motion.div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Mail, ShieldCheck, MapPin, Package, Heart, LogOut, Settings, Bell, CreditCard, ChevronRight, Edit3, FileText, HelpCircle, Award, ArrowLeft, Key, Lock, Phone, Save, X, CheckCircle2, Trash2 } from 'lucide-react';
+import { User, Mail, ShieldCheck, MapPin, Package, Heart, LogOut, Settings, Bell, CreditCard, ChevronRight, Edit3, FileText, HelpCircle, Award, ArrowLeft, Key, Lock, Phone, Save, X, CheckCircle2, Trash2, Calendar, Truck, Fingerprint, Globe, ClipboardCheck, Box, Plane, AlertCircle } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import API from '../api/api';
 import toast from 'react-hot-toast';
@@ -37,13 +37,66 @@ const Profile = () => {
   const [passwordForm, setPasswordForm] = useState({ oldPassword: '', newPassword: '' });
   const [selectedOrder, setSelectedOrder] = useState(null);
 
+  const getStepStatus = (status) => {
+    const s = status?.toLowerCase();
+    if (s === 'delivered') return 4;
+    if (s === 'shipped') return 3;
+    if (s === 'confirmed' || s === 'confrom') return 2;
+    return 1; // pending
+  };
+
+  const OrderStepper = ({ status }) => {
+    const currentStep = getStepStatus(status);
+    const steps = [
+      { id: 1, label: 'Registry Established', icon: ClipboardCheck },
+      { id: 2, label: 'Quality Protocol', icon: Box },
+      { id: 3, label: 'Neural Transit', icon: Plane },
+      { id: 4, label: 'Successful Arrival', icon: Truck }
+    ];
+
+    return (
+      <div className="luxury-stepper mb-20 px-10">
+        <div className="stepper-line"></div>
+        <motion.div 
+          className="stepper-progress" 
+          initial={{ width: '0%' }}
+          animate={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+          transition={{ duration: 1, ease: "easeInOut" }}
+        ></motion.div>
+        
+        <div className="stepper-path-container">
+          {steps.map((step) => {
+            const Icon = step.icon;
+            const isCompleted = currentStep > step.id;
+            const isActive = currentStep === step.id;
+
+            return (
+              <div key={step.id} className={`step-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}>
+                <div className="step-node shadow-2xl">
+                   <Icon size={24} className="step-icon" />
+                   {isCompleted && (
+                      <div className="absolute -top-1 -right-1 bg-emerald-500 rounded-full p-1 shadow-lg border border-white/20">
+                         <CheckCircle2 size={10} className="text-white" />
+                      </div>
+                   )}
+                </div>
+                <span className="step-label font-black italic">{step.label}</span>
+                <span className="step-number uppercase tracking-widest">Protocol 0{step.id}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   useEffect(() => {
     const tab = queryParams.get('tab');
     if (tab) setActiveSection(tab);
   }, [location.search]);
 
   useEffect(() => {
-    if (activeSection === 'orders') {
+    if (activeSection === 'orders' || activeSection === 'overview') {
       fetchOrders();
     }
   }, [activeSection]);
@@ -341,6 +394,46 @@ const Profile = () => {
                            </div>
                         </div>
 
+                        {/* Logistics Overview */}
+                        {orders.some(o => o.deliveryDate) && (
+                           <div className="bg-white/5 border border-white/10 p-12 rounded-[4rem] shadow-2xl relative overflow-hidden group">
+                              <div className="flex justify-between items-center mb-10 relative z-10 px-4">
+                                 <div>
+                                    <h3 className="text-3xl font-playfair font-black text-white italic tracking-tight">Active Deployments</h3>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.4em] mt-3 italic">Scheduled & In-Transit Assets</p>
+                                 </div>
+                                 <div className="w-16 h-16 bg-luxury-gold/10 rounded-[2rem] flex items-center justify-center text-luxury-gold shadow-2xl border border-luxury-gold/20">
+                                    <Truck size={30} className="animate-pulse" />
+                                 </div>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+                                 {orders.filter(o => o.deliveryDate).slice(0, 4).map(o => (
+                                    <div key={o._id} className="flex items-center justify-between p-8 bg-white/[0.03] rounded-[3rem] border border-white/5 hover:border-luxury-gold/30 transition-all duration-500">
+                                       <div className="flex items-center gap-6">
+                                          <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-luxury-gold transition-colors">
+                                             <Package size={22} />
+                                          </div>
+                                          <div>
+                                             <p className="text-[11px] font-black text-white uppercase tracking-widest">Order #{o._id.slice(-4).toUpperCase()}</p>
+                                             <p className="text-[9px] font-bold text-luxury-gold uppercase tracking-[0.2em] mt-2 italic">Expected Arrival: {new Date(o.deliveryDate).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                             <div className="mt-2 flex items-center gap-2">
+                                                <div className={`w-1.5 h-1.5 rounded-full ${o.status?.toLowerCase() === 'shipped' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">{o.status}</span>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <button 
+                                          onClick={() => { setActiveSection('orders'); setSelectedOrder(o); }}
+                                          className="px-8 py-3 bg-white/10 text-[9px] font-black uppercase tracking-widest text-white rounded-xl hover:bg-luxury-gold transition-all shadow-xl"
+                                       >
+                                          Track Asset
+                                       </button>
+                                    </div>
+                                 ))}
+                              </div>
+                           </div>
+                        )}
+
                         {/* Quick Stats */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                            {[
@@ -462,6 +555,11 @@ const Profile = () => {
                                              <div className={`px-5 py-2.5 rounded-2xl text-[9px] uppercase tracking-widest font-black border ${getStatusColor(order.status)}`}>
                                                 {order.status}
                                              </div>
+                                             {order.deliveryDate && (
+                                               <p className="mt-3 text-[10px] font-black text-luxury-gold uppercase tracking-[0.2em] italic text-right">
+                                                  Arrival: {new Date(order.deliveryDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+                                               </p>
+                                             )}
                                           </div>
                                           <div className="text-right">
                                              <p className="text-[9px] uppercase tracking-[0.5em] font-black text-luxury-gold mb-3 italic">Final Valuation</p>
@@ -769,6 +867,9 @@ const Profile = () => {
 
                  {/* Modal Body */}
                  <div className="flex-grow overflow-y-auto p-10 space-y-12">
+                    {/* Dynamic Stepper Protocol */}
+                    <OrderStepper status={selectedOrder.status} />
+
                     {/* Logistics & Status */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                        <div className="bg-white/5 p-8 rounded-3xl border border-white/5">
@@ -786,6 +887,35 @@ const Profile = () => {
                           <p className="text-3xl font-black text-white tracking-tighter">${formatPrice(selectedOrder.totalAmount)}</p>
                        </div>
                     </div>
+
+                    {/* Delivery & Tracking Protocol */}
+                    {(selectedOrder.deliveryDate || selectedOrder.trackingId) && (
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          {selectedOrder.deliveryDate && (
+                             <div className="bg-gradient-to-br from-luxury-gold/20 to-transparent p-8 rounded-[2.5rem] border border-luxury-gold/20 flex items-center justify-between shadow-xl">
+                                <div>
+                                   <p className="text-[8px] uppercase tracking-[0.4em] font-black text-luxury-gold mb-2 flex items-center gap-2"><Calendar size={12}/> Deployment Schedule</p>
+                                   <p className="text-xl font-black text-white tracking-widest uppercase italic">{new Date(selectedOrder.deliveryDate).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                </div>
+                                <div className="w-12 h-12 bg-luxury-gold/10 rounded-2xl flex items-center justify-center text-luxury-gold shadow-inner">
+                                   <Truck size={24} />
+                                </div>
+                             </div>
+                          )}
+                          {selectedOrder.trackingId && (
+                             <div className="bg-white/5 p-8 rounded-[2.5rem] border border-white/5 flex items-center justify-between shadow-xl">
+                                <div>
+                                   <p className="text-[8px] uppercase tracking-[0.4em] font-black text-slate-500 mb-2 flex items-center gap-2"><Fingerprint size={12}/> Neural Relay Link</p>
+                                   <p className="text-sm font-black text-indigo-400 tracking-[0.2em] uppercase">{selectedOrder.trackingId}</p>
+                                   <p className="text-[8px] font-bold text-slate-600 uppercase tracking-widest mt-1">Carrier: {selectedOrder.courierPartner || 'Global Relay'}</p>
+                                </div>
+                                <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-slate-400 shadow-inner">
+                                   <Globe size={20} />
+                                </div>
+                             </div>
+                          )}
+                       </div>
+                    )}
 
                     {/* Itemized Registry */}
                     <div className="space-y-6">

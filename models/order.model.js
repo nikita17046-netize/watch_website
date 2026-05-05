@@ -35,6 +35,10 @@ let OrderSchema = mongoose.Schema({
     type: String,
     default: ""
   },
+  deliveryDate: {
+    type: String,
+    default: ""
+  },
 });
 
 module.exports = mongoose.model("order", OrderSchema);

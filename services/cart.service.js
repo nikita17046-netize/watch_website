@@ -4,9 +4,17 @@ const cartModel = require("../models/cart.model");
 module.exports.addToCart = async ({ userId, item }) => {
   let cart = await cartModel.findOne({ userId });
 
-  if (!cart) cart = new cartModel({ userId, items: [] });
+  if (!cart) {
+    cart = new cartModel({ userId, items: [] });
+  }
 
-  cart.items.push(item);
+  const itemIndex = cart.items.findIndex(val => val.productId.equals(item.productId));
+  if (itemIndex > -1) {
+    cart.items[itemIndex].quantity += (item.quantity || 1);
+  } else {
+    cart.items.push(item);
+  }
+
   await cart.save();
   return await cartModel.findOne({ userId }).populate('items.productId');
 };

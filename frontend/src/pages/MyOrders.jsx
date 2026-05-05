@@ -1,12 +1,64 @@
 import React, { useState, useEffect } from 'react';
 import API from '../api/api';
 import { motion } from 'framer-motion';
-import { Package, Truck, CheckCircle2, Clock, ChevronRight, ShoppingBag, ShieldCheck } from 'lucide-react';
+import { Package, Truck, CheckCircle2, Clock, ChevronRight, ShoppingBag, ShieldCheck, Calendar, ClipboardCheck, Box, Plane } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const getStepStatus = (status) => {
+    const s = status?.toLowerCase();
+    if (s === 'delivered') return 4;
+    if (s === 'shipped') return 3;
+    if (s === 'confirmed' || s === 'confrom') return 2;
+    return 1; // pending
+  };
+
+  const OrderStepper = ({ status }) => {
+    const currentStep = getStepStatus(status);
+    const steps = [
+      { id: 1, label: 'Registry Established', icon: ClipboardCheck },
+      { id: 2, label: 'Quality Protocol', icon: Box },
+      { id: 3, label: 'Neural Transit', icon: Plane },
+      { id: 4, label: 'Successful Arrival', icon: Truck }
+    ];
+
+    return (
+      <div className="luxury-stepper mb-16 mt-8 px-4 md:px-10 scale-[0.85] md:scale-100 origin-center">
+        <div className="stepper-line bg-luxury-sand/30"></div>
+        <motion.div 
+          className="stepper-progress bg-luxury-gold shadow-none" 
+          initial={{ width: '0%' }}
+          animate={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+          transition={{ duration: 1, ease: "easeInOut" }}
+        ></motion.div>
+        
+        <div className="stepper-path-container">
+          {steps.map((step) => {
+            const Icon = step.icon;
+            const isCompleted = currentStep > step.id;
+            const isActive = currentStep === step.id;
+
+            return (
+              <div key={step.id} className={`step-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}>
+                <div className="step-node bg-white border-luxury-sand/40">
+                   <Icon size={20} className={`transition-colors duration-500 ${isCompleted || isActive ? 'text-white' : 'text-gray-300'}`} />
+                   {isCompleted && (
+                      <div className="absolute -top-1 -right-1 bg-emerald-500 rounded-full p-1 shadow-sm">
+                         <CheckCircle2 size={10} className="text-white" />
+                      </div>
+                   )}
+                </div>
+                <span className={`step-label text-[8px] font-black italic ${isCompleted || isActive ? 'text-luxury-gold' : 'text-gray-400'}`}>{step.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
 
   useEffect(() => {
     fetchOrders();
@@ -98,6 +150,13 @@ const MyOrders = () => {
                   </div>
                 </div>
 
+                </div>
+
+                {/* Logistics Journey */}
+                <div className="bg-luxury-pearl/20 border-b border-luxury-sand py-4">
+                  <OrderStepper status={order.status} />
+                </div>
+
                 {/* Order Items */}
                 <div className="p-10 space-y-8">
                   {order.items.map((item) => (
@@ -115,6 +174,27 @@ const MyOrders = () => {
                     </div>
                   ))}
                 </div>
+
+                {/* Delivery Information Section */}
+                {order.deliveryDate && (
+                  <div className="mx-10 mb-8 p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100 flex items-center justify-between">
+                    <div className="flex items-center gap-6">
+                      <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-luxury-gold shadow-sm">
+                        <Calendar size={24} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-1">Scheduled Delivery</p>
+                        <p className="text-sm font-black text-luxury-charcoal uppercase italic tracking-tighter">Your acquisition arrives on {new Date(order.deliveryDate).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                      </div>
+                    </div>
+                    {order.status === 'shipped' && (
+                      <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-50 px-4 py-2 rounded-xl">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                        In Transit
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Order Footer */}
                 <div className="px-10 py-8 bg-luxury-pearl/30 border-t border-luxury-sand flex justify-between items-center">

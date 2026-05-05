@@ -6,19 +6,48 @@ import {
   Clock, AlertCircle, ExternalLink, Filter, MoreHorizontal, ShieldCheck,
   TrendingUp, Activity, Box, ArrowLeft, Globe, Zap, BarChart3, Settings,
   CreditCard, Wallet, Landmark, Plus, Edit, Trash2, X, Lock, Cpu, Server, Database,
-  Brain, Sparkles, Wand2, Eye, EyeOff, ShieldAlert
+  Brain, Sparkles, Wand2, Eye, EyeOff, ShieldAlert,
+  User, ShoppingCart, Calendar, CheckSquare, Fingerprint
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
+
+const StatusBadge = ({ status }) => {
+  const config = {
+    pending: { icon: <Clock size={12} />, bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100', label: 'Pending' },
+    shipped: { icon: <Truck size={12} />, bg: 'bg-indigo-50', text: 'text-luxury-gold', border: 'border-indigo-100', label: 'In Transit' },
+    delivered: { icon: <CheckCircle2 size={12} />, bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100', label: 'Delivered' },
+    cancelled: { icon: <AlertCircle size={12} />, bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-100', label: 'Cancelled' },
+  };
+
+  const style = config[status] || config.pending;
+
+  return (
+    <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${style.bg} ${style.text} ${style.border} shadow-sm transition-all hover:scale-105`}>
+      {style.icon}
+      {style.label}
+    </div>
+  );
+};
+
 const LogisticsHub = () => {
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [activeSubTab, setActiveSubTab] = useState('dashboard');
+  const [activeSubTab, setActiveSubTab] = useState(() => localStorage.getItem('logistics_active_tab') || 'dashboard');
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState(() => {
+    const saved = localStorage.getItem('logistics_selected_company');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('logistics_active_tab', activeSubTab);
+    localStorage.setItem('logistics_selected_company', JSON.stringify(selectedCompany));
+  }, [activeSubTab, selectedCompany]);
 
   // AI Intelligence State
   const [isAiScanning, setIsAiScanning] = useState(false);
@@ -50,13 +79,24 @@ const LogisticsHub = () => {
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState(null);
   const [newCompany, setNewCompany] = useState({ id: '', label: '', icon: 'Truck', color: 'indigo', password: 'admin@123' });
+  const [deliveryDates, setDeliveryDates] = useState({});
+
 
   const fetchLogistics = async () => {
     try {
       setLoading(true);
       const res = await API.get('/admin/orders');
       const allOrders = res.data.orders || [];
-      setOrders(allOrders.filter(o => ['shipped', 'delivered'].includes(o.status)));
+      setOrders(allOrders.filter(o => 
+        ['shipped', 'delivered', 'pending', 'confrom', 'confirmed'].includes(o.status?.toLowerCase())
+      ));
+      
+      // Sync delivery dates state with database records
+      const dates = {};
+      allOrders.forEach(o => {
+        if (o.deliveryDate) dates[o._id] = o.deliveryDate;
+      });
+      setDeliveryDates(dates);
     } catch (err) {
       toast.error("Failed to sync with Logistics Terminal");
     } finally {
@@ -143,29 +183,12 @@ const LogisticsHub = () => {
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.trackingId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order._id.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === 'all' ? true : order.status === filterStatus;
-    const matchesCompany = activeSubTab === 'terminal' ? order.courierPartner === selectedCompany?.id : true;
+      order._id?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = filterStatus === 'all' ? true : order.status?.toLowerCase() === filterStatus.toLowerCase();
+    const matchesCompany = activeSubTab === 'terminal' ? 
+      (order.courierPartner?.replace(/\s+/g, '').toLowerCase() === selectedCompany?.id?.replace(/\s+/g, '').toLowerCase()) : true;
     return matchesSearch && matchesStatus && matchesCompany;
   });
-
-  const StatusBadge = ({ status }) => {
-    const config = {
-      pending: { icon: <Clock size={12} />, bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100', label: 'Pending' },
-      shipped: { icon: <Truck size={12} />, bg: 'bg-indigo-50', text: 'text-luxury-gold', border: 'border-indigo-100', label: 'In Transit' },
-      delivered: { icon: <CheckCircle2 size={12} />, bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100', label: 'Delivered' },
-      cancelled: { icon: <AlertCircle size={12} />, bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-100', label: 'Cancelled' },
-    };
-
-    const style = config[status] || config.pending;
-
-    return (
-      <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${style.bg} ${style.text} ${style.border} shadow-sm transition-all hover:scale-105`}>
-        {style.icon}
-        {style.label}
-      </div>
-    );
-  };
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Cpu, sub: 'Control Center' },
@@ -621,52 +644,177 @@ const LogisticsHub = () => {
             )}
 
             {activeSubTab === 'terminal' && selectedCompany && (
-              <motion.div key="terminal" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="space-y-14 pb-32">
-                <div className="flex justify-between items-center bg-white p-14 rounded-[5rem] border border-slate-100 shadow-sm">
-                  <div className="flex items-center gap-10">
-                    <button onClick={() => setActiveSubTab('config')} className="w-16 h-16 bg-slate-50 rounded-[2rem] text-slate-400 hover:text-luxury-gold hover:bg-white transition-all border border-slate-100 flex items-center justify-center shadow-sm group"><ArrowLeft size={28} className="group-hover:-translate-x-1 transition-transform" /></button>
+              <motion.div key="terminal" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="space-y-16 pb-32">
+                {/* TERMINAL HEADER */}
+                <div className="bg-white/80 backdrop-blur-xl p-14 rounded-[5rem] border border-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.05)] flex justify-between items-center relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-luxury-gold/5 rounded-full blur-[100px] -mr-32 -mt-32" />
+                  <div className="flex items-center gap-10 relative z-10">
+                    <button onClick={() => setActiveSubTab('config')} className="w-16 h-16 bg-white rounded-[2rem] text-slate-400 hover:text-luxury-gold hover:shadow-xl transition-all border border-slate-100 flex items-center justify-center group"><ArrowLeft size={28} className="group-hover:-translate-x-1 transition-transform" /></button>
                     <div>
-                      <h3 className="text-4xl font-black text-slate-900 tracking-tight uppercase italic leading-none">{selectedCompany.label} Node Registry</h3>
-                      <p className="text-[11px] text-luxury-gold font-black uppercase tracking-[0.6em] mt-3">Connection Authenticated: MASTER NODE</p>
+                      <h3 className="text-5xl font-black text-slate-900 tracking-tighter uppercase italic leading-none">{selectedCompany.label} <span className="text-luxury-gold">Terminal</span></h3>
+                      <div className="flex items-center gap-3 mt-4">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_#10b981]" />
+                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.6em]">Secure Neural Link Established</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex gap-6">
+                  <div className="flex gap-4 p-2 bg-slate-50 rounded-[2.5rem] border border-slate-100 relative z-10">
                     {['all', 'shipped', 'delivered'].map((s) => (
-                      <button key={s} onClick={() => setFilterStatus(s)} className={`px-12 py-5 rounded-[2rem] text-[11px] font-black uppercase tracking-widest border transition-all ${filterStatus === s ? 'bg-slate-900 text-white border-slate-900 shadow-2xl' : 'bg-white text-slate-400 border-slate-100 hover:border-luxury-gold'}`}>{s}</button>
+                      <button key={s} onClick={() => setFilterStatus(s)} className={`px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === s ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-900 hover:bg-white'}`}>{s}</button>
                     ))}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-8">
+                {/* ORDER MANIFESTS */}
+                <div className="grid grid-cols-1 gap-14">
                   {filteredOrders.length > 0 ? filteredOrders.map((o) => (
-                    <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} key={o._id} className="bg-white p-12 rounded-[4rem] border border-slate-100 flex items-center justify-between shadow-sm hover:shadow-2xl hover:border-luxury-gold/30 transition-all group">
-                      <div className="flex items-center gap-12">
-                        <div className="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-100 group-hover:text-luxury-gold transition-all duration-700 shadow-inner border border-slate-50"><Box size={40} /></div>
-                        <div>
-                          <p className="text-2xl font-black text-slate-900 uppercase italic mb-2 tracking-tight">ID: #{o._id.slice(-16).toUpperCase()}</p>
-                          <div className="flex items-center gap-4 mt-2 text-slate-400 font-bold uppercase text-[11px] tracking-widest leading-none">
-                            <MapPin size={16} className="text-luxury-gold" /> {o.shippingAddress?.slice(0, 60)}...
-                          </div>
+                    <motion.div 
+                      initial={{ opacity: 0, x: -30 }} 
+                      animate={{ opacity: 1, x: 0 }} 
+                      key={o._id} 
+                      className="bg-white rounded-[6rem] border border-slate-100 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.03)] hover:shadow-[0_50px_100px_-20px_rgba(0,0,0,0.08)] transition-all duration-700 group relative overflow-hidden"
+                    >
+                      {/* SIDE ACCENT */}
+                      <div className="absolute top-0 left-0 w-3 h-full bg-luxury-gold opacity-0 group-hover:opacity-100 transition-all duration-700" />
+                      
+                      <div className="flex flex-col xl:flex-row divide-y xl:divide-y-0 xl:divide-x divide-slate-50">
+                        
+                        {/* SECTION 1: IDENTITY CORE */}
+                        <div className="p-10 xl:w-[28%] flex flex-col justify-between bg-slate-50/20">
+                           <div>
+                              <div className="flex items-center justify-between mb-8">
+                                 <div className="w-16 h-16 bg-white rounded-[2rem] flex items-center justify-center text-luxury-gold shadow-xl shadow-luxury-gold/5 border border-luxury-gold/5 group-hover:scale-105 transition-transform duration-700">
+                                    <Fingerprint size={28} />
+                                 </div>
+                                 <StatusBadge status={o.status} />
+                              </div>
+                              <div className="mb-8">
+                                 <p className="text-[9px] text-luxury-gold font-black uppercase tracking-[0.6em] mb-2">Manifest ID</p>
+                                 <h4 className="text-2xl font-black text-slate-900 tracking-tighter uppercase italic leading-none">#{o._id.slice(-12).toUpperCase()}</h4>
+                              </div>
+                           </div>
+
+                           <div className="space-y-3">
+                              <div className="p-4 bg-white/50 backdrop-blur-sm rounded-3xl border border-white shadow-sm flex items-center gap-4">
+                                 <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white shrink-0"><User size={16} /></div>
+                                 <div className="min-w-0">
+                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Consignee</p>
+                                    <p className="text-[12px] font-black text-slate-900 uppercase tracking-tight truncate">{o.userId?.username || 'GUEST USER'}</p>
+                                 </div>
+                              </div>
+                              <div className="p-4 bg-white/50 backdrop-blur-sm rounded-3xl border border-white shadow-sm flex items-center gap-4">
+                                 <div className="w-10 h-10 bg-luxury-gold rounded-xl flex items-center justify-center text-white shrink-0"><MapPin size={16} /></div>
+                                 <div className="min-w-0">
+                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Deployment Node</p>
+                                    <p className="text-[9px] font-black text-slate-600 uppercase leading-tight tracking-tighter line-clamp-2">{o.shippingAddress}</p>
+                                 </div>
+                              </div>
+                           </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-24">
-                        <div className="text-right">
-                          <p className="text-[11px] font-black text-slate-300 uppercase tracking-widest mb-2">Relay Link</p>
-                          <p className="text-[16px] font-black text-slate-900 uppercase tracking-[0.1em]">{o.trackingId}</p>
+
+                        {/* SECTION 2: ASSET REGISTRY */}
+                        <div className="p-10 xl:w-[44%] bg-white">
+                           <div className="flex items-center gap-4 mb-8">
+                              <div className="w-8 h-8 bg-indigo-50 text-indigo-500 rounded-lg flex items-center justify-center"><ShoppingCart size={16} /></div>
+                              <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em]">Asset Inventory Registry</h5>
+                           </div>
+                           
+                           <div className="space-y-4 max-h-[180px] overflow-y-auto no-scrollbar mb-8 pr-2">
+                              {o.items?.map((item, idx) => (
+                                 <div key={idx} className="flex justify-between items-center p-4 bg-slate-50/50 rounded-2xl border border-transparent hover:border-slate-100 hover:bg-white transition-all group/item">
+                                    <div className="flex items-center gap-5">
+                                       <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-50 overflow-hidden relative shrink-0">
+                                          <img src={item.productId?.images?.[0]} alt="" className="w-full h-full object-cover grayscale group-hover/item:grayscale-0 transition-all duration-500" />
+                                          <div className="absolute top-0 right-0 bg-slate-900 text-white text-[7px] font-black px-1.5 py-0.5 rounded-bl-md">x{item.quantity}</div>
+                                       </div>
+                                       <div className="text-left min-w-0">
+                                          <p className="text-[11px] font-black text-slate-900 uppercase tracking-tight mb-0.5 leading-none truncate">{item.productId?.name || 'Unknown Asset'}</p>
+                                          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">ID: #{String(item.productId?._id || item.productId || 'N/A').slice(-8).toUpperCase()}</p>
+                                       </div>
+                                    </div>
+                                    <span className="text-[11px] font-black text-slate-900 tracking-tighter shrink-0 ml-4">₹{item.price?.toLocaleString()}</span>
+                                 </div>
+                              ))}
+                           </div>
+
+                           <div className="p-8 bg-gradient-to-br from-slate-900 to-slate-800 rounded-[3rem] flex justify-between items-center text-white shadow-xl shadow-slate-900/10 relative overflow-hidden">
+                              <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 blur-xl" />
+                              <div className="relative z-10">
+                                 <p className="text-[9px] font-black uppercase tracking-[0.4em] opacity-50 mb-1">Gross Valuation</p>
+                                 <h6 className="text-2xl font-black italic tracking-tighter">₹{o.totalAmount?.toLocaleString()}</h6>
+                              </div>
+                              <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-luxury-gold backdrop-blur-md">
+                                 <CreditCard size={24} />
+                              </div>
+                           </div>
                         </div>
-                        <StatusBadge status={o.status} />
+
+                        {/* SECTION 3: LOGISTICS PROTOCOL */}
+                        <div className="p-10 xl:w-[28%] flex flex-col justify-between bg-slate-50/20">
+                           <div>
+                              <div className="flex items-center gap-4 mb-8">
+                                 <div className="w-8 h-8 bg-amber-50 text-amber-500 rounded-lg flex items-center justify-center"><Calendar size={16} /></div>
+                                 <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em]">Logistics Protocol</h5>
+                              </div>
+
+                              <div className="space-y-6">
+                                 <div className="relative group/date">
+                                    <label className="text-[8px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 ml-3 block">Deployment Schedule</label>
+                                    <div className="relative">
+                                       <input 
+                                          type="date" 
+                                          value={deliveryDates[o._id] || ''}
+                                          onChange={(e) => setDeliveryDates({...deliveryDates, [o._id]: e.target.value})}
+                                          className="w-full pl-6 pr-6 py-5 bg-white border border-slate-100 rounded-3xl outline-none text-[11px] font-black text-slate-900 focus:border-luxury-gold focus:ring-4 focus:ring-luxury-gold/5 transition-all shadow-sm shadow-inner uppercase"
+                                       />
+                                       <Calendar size={16} className="absolute right-6 top-1/2 -translate-y-1/2 text-luxury-gold pointer-events-none opacity-40" />
+                                    </div>
+                                 </div>
+                                 
+                                 <div className="p-6 rounded-3xl bg-white border border-slate-100 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0"><Truck size={18} /></div>
+                                    <div className="min-w-0">
+                                       <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Neural Relay Link</p>
+                                       <p className="text-[11px] font-black text-indigo-600 tracking-[0.1em] truncate">{o.trackingId || 'PENDING LINK'}</p>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+
+                           <button 
+                              onClick={async () => {
+                                 if (!deliveryDates[o._id]) return toast.error("Select Schedule Date");
+                                 try {
+                                    await API.post(`/admin/orders/status/${o._id}`, { 
+                                       deliveryDate: deliveryDates[o._id],
+                                       status: 'shipped'
+                                    });
+                                    toast.success(`Protocol Synchronized: Delivery scheduled for ${deliveryDates[o._id]}`);
+                                    fetchLogistics();
+                                 } catch (err) {
+                                    toast.error("Neural Sync Failed");
+                                 }
+                              }}
+                              className="w-full mt-10 py-6 bg-luxury-gold text-white rounded-[2rem] text-[11px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 hover:bg-slate-900 hover:scale-[1.01] active:scale-95 transition-all shadow-lg shadow-luxury-gold/20 relative overflow-hidden group/btn"
+                           >
+                              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500" />
+                              <CheckSquare size={18} className="relative z-10" /> 
+                              <span className="relative z-10 font-bold">Synchronize</span>
+                           </button>
+                        </div>
                       </div>
                     </motion.div>
                   )) : (
-                    <div className="py-72 text-center bg-white rounded-[6rem] border border-dashed border-slate-200 flex flex-col items-center shadow-inner">
-                      <ShieldCheck size={120} className="text-slate-50 mb-12" />
-                      <h4 className="text-3xl font-black text-slate-100 uppercase italic tracking-[0.4em]">Registry Quiescent</h4>
-                      <p className="text-[11px] text-slate-300 font-black uppercase tracking-widest mt-6">Node terminal is currently awaiting data packets...</p>
+                    <div className="py-72 text-center bg-white rounded-[8rem] border border-dashed border-slate-200 flex flex-col items-center shadow-inner">
+                      <div className="w-32 h-32 bg-slate-50 rounded-[3rem] flex items-center justify-center text-slate-100 mb-12 shadow-inner"><ShieldCheck size={80} /></div>
+                      <h4 className="text-4xl font-black text-slate-200 uppercase italic tracking-[0.4em]">Registry Quiescent</h4>
+                      <p className="text-[11px] text-slate-300 font-black uppercase tracking-widest mt-6 max-w-sm leading-loose">The neural terminal is currently in standby mode. Awaiting incoming data packets for manifest synchronization.</p>
                     </div>
                   )}
                 </div>
               </motion.div>
             )}
+
           </AnimatePresence>
         </div>
       </main>

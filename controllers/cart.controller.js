@@ -7,18 +7,6 @@ module.exports.AddToCart = async (req, res) => {
     const userId = req.user.id;
     const { item } = req.body;
 
-    const Exist = await cartModel.findOne({ userId });
-    const existProduct = Exist.items.map((val) => {
-      const ids = val.productId;
-      return ids;
-    });
-   
-    existProduct.forEach((e) => {
-      if(e.equals(item.productId)){
-        return res.status(400).json({message: "Product Already Is Add Into Cart"})
-      }
-    });
-
     const cart = await cartService.addToCart({ userId, item });
 
     return res

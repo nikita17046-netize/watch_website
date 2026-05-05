@@ -25,6 +25,8 @@ import FAQ from './pages/FAQ';
 import Profile from './pages/Profile';
 import LogisticsHub from './pages/LogisticsHub';
 import Contact from './pages/Contact';
+import AboutUs from './pages/AboutUs';
+
 
 
 
@@ -81,6 +83,8 @@ function App() {
                 <Route path="/wishlist" element={<Wishlist />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/about" element={<AboutUs />} />
+
                 <Route path="/profile" element={<Profile />} />
 
 

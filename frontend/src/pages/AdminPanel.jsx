@@ -84,12 +84,17 @@ const AdminPanel = () => {
    const [editingOffer, setEditingOffer] = useState(null);
    const [newOffer, setNewOffer] = useState({ title: '', discount: 0, product: '', expiry: '' });
 
+   // Editing State for Products
+   const [editingProduct, setEditingProduct] = useState(null);
+   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
    // FAQ State
    const [faqs, setFaqs] = useState([]);
    const [isFaqModalOpen, setIsFaqModalOpen] = useState(false);
    const [editingFaq, setEditingFaq] = useState(null);
    const [newFaq, setNewFaq] = useState({ question: '', answer: '', category: 'General', order: 0 });
    const [trackingForm, setTrackingForm] = useState({ trackingId: '', courierPartner: 'BlueDart' });
+   const [deliveryDate, setDeliveryDate] = useState('');
    const [searchTerm, setSearchTerm] = useState("");
    const [isDarkMode, setIsDarkMode] = useState(false);
    const [isBulkPriceModalOpen, setIsBulkPriceModalOpen] = useState(false);
@@ -189,6 +194,7 @@ const AdminPanel = () => {
          if (newStatus === 'shipped') {
             payload.trackingId = trackingForm.trackingId;
             payload.courierPartner = trackingForm.courierPartner;
+            payload.deliveryDate = deliveryDate; // Include selected delivery date
          }
          await API.post(`/admin/orders/status/${orderId}`, payload);
          toast.success(`Order status migrated to ${newStatus}`);
@@ -233,6 +239,53 @@ const AdminPanel = () => {
           fetchAllData();
        } catch (err) {
           toast.error(err.response?.data?.message || 'Injection failed');
+       }
+    };
+
+    const handleDeleteProduct = async (id) => {
+       if (!window.confirm('Are you sure you want to PERMANENTLY REMOVE this asset from the registry?')) return;
+       const tid = toast.loading('Executing Deletion Protocol...');
+       try {
+          await API.delete(`/product/${id}`);
+          toast.success('Asset removed from registry', { id: tid });
+          fetchAllData();
+       } catch (err) {
+          toast.error('Deletion protocol BLOCKED', { id: tid });
+       }
+    };
+
+    const handleEditProduct = (product) => {
+       setEditingProduct(product);
+       setNewProduct({
+          name: product.name,
+          description: product.description,
+          stock: product.stock,
+          price: product.price,
+          discount: product.discount || 0,
+          isNewProduct: product.isNewProduct,
+          sku: product.sku || '',
+          images: product.images || [''],
+          brand: product.brand || '',
+          category: product.category || ''
+       });
+       setIsAddModalOpen(true);
+    };
+
+    const handleUpdateProduct = async (e) => {
+       e.preventDefault();
+       const tid = toast.loading('Authorizing Record Update...');
+       try {
+          await API.put(`/product/${editingProduct._id}`, newProduct);
+          toast.success('Horological record updated', { id: tid });
+          setIsAddModalOpen(false);
+          setEditingProduct(null);
+          setNewProduct({
+             name: '', description: '', stock: 0, price: 0, discount: 0,
+             isNewProduct: true, sku: '', images: [''], brand: '', category: ''
+          });
+          fetchAllData();
+       } catch (err) {
+          toast.error('Update protocol FAILED', { id: tid });
        }
     };
 
@@ -392,6 +445,7 @@ const AdminPanel = () => {
                      <Link
                         key={item.id}
                         to={item.link}
+                        onClick={() => setActiveTab(item.id)}
                         className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-200 ${item.special ? 'text-indigo-400 border-l-4 border-luxury-gold bg-luxury-gold/5' : activeTab === item.id ? 'text-luxury-gold bg-white/5 border-l-4 border-luxury-gold pl-3' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
                      >
                         <item.icon size={18} />
@@ -854,7 +908,7 @@ const AdminPanel = () => {
                                        >{cat}</button>
                                     ))}
                                  </div>
-                                 <button onClick={() => setIsAddModalOpen(true)} className="px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-luxury-gold transition-all flex items-center gap-3">
+                                 <button onClick={() => { setEditingProduct(null); setIsAddModalOpen(true); }} className="px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-luxury-gold transition-all flex items-center gap-3">
                                     <Plus size={16} /> Add Asset
                                  </button>
                               </div>
@@ -887,7 +941,22 @@ const AdminPanel = () => {
                                                 />
                                                 <span className="text-[10px] font-black uppercase text-slate-400 mt-1 block">{p?.stock} Units</span>
                                              </td>
-                                             <td className="p-6 text-center pr-10"><div className="flex justify-center gap-3"><button className="w-9 h-9 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-luxury-gold shadow-sm"><Edit size={16} /></button><button className="w-9 h-9 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 shadow-sm"><Trash2 size={16} /></button></div></td>
+                                             <td className="p-6 text-center pr-10">
+                                                <div className="flex justify-center gap-3">
+                                                   <button 
+                                                      onClick={() => handleEditProduct(p)}
+                                                      className="w-9 h-9 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-luxury-gold shadow-sm transition-all"
+                                                   >
+                                                      <Edit size={16} />
+                                                   </button>
+                                                   <button 
+                                                      onClick={() => handleDeleteProduct(p._id)}
+                                                      className="w-9 h-9 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 shadow-sm transition-all"
+                                                   >
+                                                      <Trash2 size={16} />
+                                                   </button>
+                                                </div>
+                                             </td>
                                           </tr>
                                        ))}
                                     </tbody>
@@ -1135,7 +1204,7 @@ const AdminPanel = () => {
                            <div className="bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden">
                               <table className="w-full text-left">
                                  <thead className="bg-slate-50/50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b">
-                                    <tr><th className="p-8 pl-12">Registry ID</th><th className="p-8">Consignee</th><th className="p-8">Valuation</th><th className="p-8">Status</th><th className="p-8 text-center pr-12">Action</th></tr>
+                                    <tr><th className="p-8 pl-12">Registry ID</th><th className="p-8">Consignee</th><th className="p-8">Valuation</th><th className="p-8">Schedule</th><th className="p-8">Status</th><th className="p-8 text-center pr-12">Action</th></tr>
                                  </thead>
                                  <tbody className="divide-y divide-slate-50">
                                     {filteredOrders?.length > 0 ? filteredOrders.map((o) => (
@@ -1381,17 +1450,17 @@ const AdminPanel = () => {
                      <div className="p-10 md:p-12 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
                         <div className="flex items-center gap-6">
                            <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-luxury-gold shadow-xl">
-                              <Plus size={28} />
+                              {editingProduct ? <Edit size={28} /> : <Plus size={28} />}
                            </div>
                            <div>
-                              <h2 className="text-2xl font-black text-slate-800 tracking-tight uppercase italic leading-none">Asset Injection</h2>
-                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em] mt-2">New Horological Registry Entry</p>
+                              <h2 className="text-2xl font-black text-slate-800 tracking-tight uppercase italic leading-none">{editingProduct ? 'Record Revision' : 'Asset Injection'}</h2>
+                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em] mt-2">{editingProduct ? 'Updating Existing Registry Entry' : 'New Horological Registry Entry'}</p>
                            </div>
                         </div>
                         <button onClick={() => setIsAddModalOpen(false)} className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-slate-300 hover:text-red-500 hover:rotate-90 shadow-sm transition-all border border-slate-100"><X size={20} /></button>
                      </div>
 
-                     <form onSubmit={handleAddProduct} className="p-10 md:p-12 space-y-10 max-h-[75vh] overflow-y-auto custom-scrollbar">
+                     <form onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct} className="p-10 md:p-12 space-y-10 max-h-[75vh] overflow-y-auto custom-scrollbar">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
                            
                            {/* Main Identity */}

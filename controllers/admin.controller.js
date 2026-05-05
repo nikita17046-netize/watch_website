@@ -15,9 +15,10 @@ module.exports.GetDashboardStats = async (req, res) => {
         const totalOrders = await orderModel.countDocuments();
         const orders = await orderModel.find();
         const totalRevenue = orders.reduce((sum, order) => sum + (order.totalAmount || order.totalbill || 0), 0);
-        const pendingOrders = await orderModel.countDocuments({ status: 'Pending' });
-        const deliveredOrders = await orderModel.countDocuments({ status: 'Delivered' });
-        const cancelledOrders = await orderModel.countDocuments({ status: 'Cancelled' });
+        const pendingOrders = await orderModel.countDocuments({ status: { $regex: /^pending$/i } });
+        const shippedOrders = await orderModel.countDocuments({ status: { $regex: /^shipped$/i } });
+        const deliveredOrders = await orderModel.countDocuments({ status: { $regex: /^delivered$/i } });
+        const cancelledOrders = await orderModel.countDocuments({ status: { $regex: /^cancelled$/i } });
         const averageOrderValue = totalOrders > 0 ? (totalRevenue / totalOrders) : 0;
         const days = [];
         for (let i = 6; i >= 0; i--) {
@@ -29,7 +30,7 @@ module.exports.GetDashboardStats = async (req, res) => {
         const salesData = days.map(day => { const match = actualSales.find(s => s._id === day._id); return match ? { ...day, total: match.total } : day; });
         const recentOrders = await orderModel.find().sort({ createdAt: -1 }).limit(8).populate('userId', 'username email');
         const topProducts = await orderModel.aggregate([{ $unwind: "$items" }, { $group: { _id: "$items.productId", totalSold: { $sum: "$items.quantity" }, revenue: { $sum: "$items.total" } } }, { $sort: { totalSold: -1 } }, { $limit: 5 }, { $lookup: { from: "products", localField: "_id", foreignField: "_id", as: "productInfo" } }, { $unwind: "$productInfo" }]);
-        res.status(200).json({ stats: { totalUsers, totalProducts, totalOrders, totalRevenue, pendingOrders, deliveredOrders, cancelledOrders, averageOrderValue }, salesData, recentOrders, topProducts });
+        res.status(200).json({ stats: { totalUsers, totalProducts, totalOrders, totalRevenue, pendingOrders, shippedOrders, deliveredOrders, cancelledOrders, averageOrderValue }, salesData, recentOrders, topProducts });
     } catch (err) { res.status(500).json({ message: err.message }); }
 };
 

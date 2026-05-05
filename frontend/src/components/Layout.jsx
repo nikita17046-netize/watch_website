@@ -246,27 +246,23 @@ const Navbar = () => {
       <div className="bg-white border-t border-gray-100 flex justify-center h-14 items-center">
         <div className="flex items-center gap-16">
           {[
-            { label: 'Rolex Collection', path: '/products?brand=Rolex' },
-            { label: 'Titan Collection', path: '/products?brand=Titan' },
+            { label: 'Rolex Collection', path: '/products?search=Rolex' },
+            { label: 'Titan Collection', path: '/products?search=Titan' },
             { label: 'Men', path: '/products?category=Men' },
             { label: 'Women', path: '/products?category=Women' },
-            { label: 'New Arrivals', path: '/products?isNew=true', highlight: false },
-            { label: 'Special Offers', path: '/products?sale=true', highlight: true },
-            { label: 'Concierge FAQ', path: '/faq', highlight: false },
-            { label: 'Contact Us', path: '/contact', highlight: false },
-            ...(user && user.role === 'admin' ? [{ label: 'Logistics Hub', path: '/logistics', highlight: false }] : []),
+            { label: 'New Arrivals', path: '/products?isNew=true' },
+            { label: 'Special Offers', path: '/products?sale=true' },
+            { label: 'Concierge FAQ', path: '/faq' },
+            { label: 'Contact Us', path: '/contact' },
+            { label: 'About Us', path: '/about' },
           ].map((cat) => (
             <Link
               key={cat.label}
               to={cat.path}
-              className={`text-[11px] font-bold uppercase tracking-[0.15em] transition-all relative group py-2 
-                ${cat.label === 'Special Offers' ? 'px-4 py-1.5 bg-[var(--luxury-gold)] text-black rounded-full shadow-lg shadow-[var(--luxury-gold)]/20 animate-pulse-gentle' :
-                  cat.highlight ? 'text-[var(--luxury-gold)]' : 'text-gray-500 hover:text-black'}`}
+              className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-500 hover:text-black transition-all relative group py-2"
             >
               {cat.label}
-              {cat.label !== 'Special Offers' && (
-                <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] transition-all duration-300 group-hover:w-full ${cat.highlight ? 'bg-[var(--luxury-gold)]' : 'bg-black'}`}></span>
-              )}
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-black transition-all duration-300 group-hover:w-full"></span>
             </Link>
           ))}
         </div>
@@ -292,6 +288,8 @@ const Footer = () => {
             <div className="flex flex-col gap-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">
               <Link to="/products" className="hover:text-white">Catalogue</Link>
               <Link to="/faq" className="hover:text-white">Knowledge Base</Link>
+              <Link to="/about" className="hover:text-white">Our Story</Link>
+
               <Link to="/profile" className="hover:text-white">User Panel</Link>
               {user && user.role === 'admin' && (
                 <Link to="/logistics" className="hover:text-white">Logistics Hub</Link>
